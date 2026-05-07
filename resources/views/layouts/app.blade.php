@@ -24,6 +24,11 @@
                    @if(request()->routeIs('patients.*')) style="border-color: var(--color-raw-primary-blue);" @endif>
                     {{ __('Liste des patients') }}
                 </a>
+                <a href="{{ route('queue.timeline') }}"
+                   class="inline-block border-b-2 pb-1 transition-colors {{ request()->routeIs('queue.timeline') ? 'app-title' : 'border-transparent app-text-gray hover:app-title' }}"
+                   @if(request()->routeIs('queue.timeline')) style="border-color: var(--color-raw-primary-blue);" @endif>
+                    {{ __('Chronologie') }}
+                </a>
             </nav>
             <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                 <div class="app-input inline-flex rounded-md p-0.5 text-xs font-medium" role="group" aria-label="{{ __('Language') }}">

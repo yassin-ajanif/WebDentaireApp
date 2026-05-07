@@ -4,6 +4,7 @@ namespace App\Entities\Appointment\Contracts;
 
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Appointment\Models\Appointment;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 interface AppointmentServiceInterface
@@ -18,6 +19,11 @@ interface AppointmentServiceInterface
      * @return Collection<int, Appointment>
      */
     public function listQueue(?AppointmentStatus $status = null): Collection;
+
+    /**
+     * @return Collection<int, Appointment>
+     */
+    public function listCompletedTimeline(?Carbon $day = null): Collection;
 
     public function find(int $id): ?Appointment;
 }

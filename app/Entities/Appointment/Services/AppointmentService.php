@@ -69,6 +69,31 @@ class AppointmentService implements AppointmentServiceInterface
         return $q->get();
     }
 
+    public function listCompletedTimeline(?Carbon $day = null): Collection
+    {
+        $targetDay = $day ?? Carbon::today();
+
+        $paymentsByPatientDay = DB::table('treatment_sessions as ts')
+            ->join('treatment_infos as ti', 'ti.id', '=', 'ts.treatment_info_id')
+            ->selectRaw('ti.patient_id as patient_id, DATE(ts.created_at) as paid_date, SUM(ts.received_payment) as received_total')
+            ->groupBy('ti.patient_id', DB::raw('DATE(ts.created_at)'));
+
+        return Appointment::query()
+            ->with('patient')
+            ->select('appointments.*')
+            ->selectRaw('COALESCE(payments.received_total, 0) as received_total')
+            ->leftJoinSub($paymentsByPatientDay, 'payments', function ($join): void {
+                $join->on('payments.patient_id', '=', 'appointments.patient_id')
+                    ->whereRaw('DATE(appointments.completed_at) = payments.paid_date');
+            })
+            ->whereNotNull('appointments.started_at')
+            ->whereNotNull('appointments.completed_at')
+            ->whereDate('appointments.completed_at', $targetDay->toDateString())
+            ->orderBy('appointments.started_at')
+            ->orderBy('appointments.id')
+            ->get();
+    }
+
     public function find(int $id): ?Appointment
     {
         return Appointment::query()->find($id);

@@ -5,6 +5,7 @@ namespace App\Entities\TreatmentInfo\Models;
 use App\Entities\Patient\Models\Patient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TreatmentInfo extends Model
 {
@@ -13,22 +14,25 @@ class TreatmentInfo extends Model
     protected $fillable = [
         'patient_id',
         'description',
-        'quantity',
-        'unit_price',
-        'line_total',
+        'global_price',
+        'remaining_amount',
     ];
 
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
-            'unit_price' => 'decimal:2',
-            'line_total' => 'decimal:2',
+            'global_price' => 'decimal:2',
+            'remaining_amount' => 'decimal:2',
         ];
     }
 
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(Session::class)->orderByDesc('session_date')->orderByDesc('id');
     }
 }

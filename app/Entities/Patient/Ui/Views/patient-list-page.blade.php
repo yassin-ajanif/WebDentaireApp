@@ -13,6 +13,31 @@
         <label class="sr-only" for="search">{{ __('Search') }}</label>
         <input wire:model.live.debounce.300ms="search" id="search" type="search" placeholder="{{ __('Name or telephone…') }}"
                class="app-input block w-full max-w-md px-3 py-2 text-sm shadow-sm" />
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+            <button
+                type="button"
+                wire:click="setPaymentFilter('all')"
+                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $paymentFilter === 'all' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}"
+            >
+                {{ __('Tous') }}
+            </button>
+            <button
+                type="button"
+                wire:click="setPaymentFilter('paid')"
+                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $paymentFilter === 'paid' ? 'border-transparent text-white' : '' }}"
+                style="{{ $paymentFilter === 'paid' ? 'background-color: var(--color-accent-success);' : '' }}"
+            >
+                {{ __('Payés') }}
+            </button>
+            <button
+                type="button"
+                wire:click="setPaymentFilter('unpaid')"
+                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $paymentFilter === 'unpaid' ? 'border-transparent text-white' : '' }}"
+                style="{{ $paymentFilter === 'unpaid' ? 'background-color: #f59e0b;' : '' }}"
+            >
+                {{ __('Impayés') }}
+            </button>
+        </div>
     </div>
 
     <div class="app-card overflow-x-auto shadow-sm">

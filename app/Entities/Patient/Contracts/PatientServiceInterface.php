@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface PatientServiceInterface
 {
-    public function paginate(?string $search, int $perPage = 15): LengthAwarePaginator;
+    public function paginate(?string $search, string $paymentFilter = 'all', int $perPage = 15): LengthAwarePaginator;
 
     public function find(int $id): ?Patient;
 

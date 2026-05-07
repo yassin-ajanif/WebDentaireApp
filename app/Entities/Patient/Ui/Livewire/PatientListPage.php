@@ -13,6 +13,7 @@ class PatientListPage extends Component
     use WithPagination;
 
     public string $search = '';
+    public string $paymentFilter = 'all';
 
     private function patients(): PatientServiceInterface
     {
@@ -21,6 +22,16 @@ class PatientListPage extends Component
 
     public function updatingSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function setPaymentFilter(string $filter): void
+    {
+        if (! in_array($filter, ['all', 'paid', 'unpaid'], true)) {
+            return;
+        }
+
+        $this->paymentFilter = $filter;
         $this->resetPage();
     }
 
@@ -33,7 +44,10 @@ class PatientListPage extends Component
     public function render()
     {
         return view('patient::patient-list-page', [
-            'rows' => $this->patients()->paginate($this->search !== '' ? $this->search : null),
+            'rows' => $this->patients()->paginate(
+                $this->search !== '' ? $this->search : null,
+                $this->paymentFilter
+            ),
         ])->title(__('Patients'));
     }
 }

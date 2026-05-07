@@ -1,69 +1,183 @@
 <div class="pl-0 pr-3 sm:pr-4">
     <div class="mb-6">
-        <h1 class="app-title text-2xl font-semibold">{{ __('Treatment lines') }}</h1>
+        <h1 class="app-title text-2xl font-semibold">{{ __('Treatments') }}</h1>
         @if($patientModel)
-            <p class="app-subtitle mt-1 text-sm">{{ $patientModel->first_name }} {{ $patientModel->last_name }} — {{ $patientModel->telephone }}</p>
+            <div class="mt-1 flex flex-wrap items-center justify-between gap-2">
+                <p class="app-subtitle text-lg">{{ $patientModel->first_name }} {{ $patientModel->last_name }} — {{ $patientModel->telephone }}</p>
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                    <span class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-semibold" style="background-color: color-mix(in srgb, #22c55e 22%, white); border-color: color-mix(in srgb, #22c55e 45%, white); color: #166534;">
+                        {{ __('Total payé: :amount DH', ['amount' => $totalPaidAmount]) }}
+                    </span>
+                    <span class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-semibold" style="background-color: color-mix(in srgb, #f59e0b 26%, white); border-color: color-mix(in srgb, #f59e0b 45%, white); color: #b45309;">
+                        {{ __('Reste à payer: :amount DH', ['amount' => $totalRemainingAmount]) }}
+                    </span>
+                </div>
+            </div>
         @endif
+        <p class="app-text-muted mt-1 text-sm">{{ __('Treatments count: :count', ['count' => $treatmentsCount]) }}</p>
         <a href="{{ route('patients.index') }}" class="app-title mt-2 inline-block text-sm hover:underline">{{ __('Back to patients') }}</a>
     </div>
 
-    <div class="app-card mb-8 p-6 shadow-sm">
-        <h2 class="app-title mb-4 text-lg font-medium">{{ $editingId ? __('Edit line') : __('Add line') }}</h2>
-        <form wire:submit="saveLine" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="sm:col-span-2">
-                <label class="app-text-gray block text-sm font-medium">{{ __('Description') }}</label>
-                <input type="text" wire:model="description" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
-                @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label class="app-text-gray block text-sm font-medium">{{ __('Quantity') }}</label>
-                <input type="number" min="1" wire:model="quantity" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
-                @error('quantity') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label class="app-text-gray block text-sm font-medium">{{ __('Unit price') }}</label>
-                <input type="text" wire:model="unit_price" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
-                @error('unit_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
-                <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium">{{ __('Save line') }}</button>
-                @if($editingId)
-                    <button type="button" wire:click="cancelEdit" class="app-btn-secondary px-4 py-2 text-sm">{{ __('Cancel edit') }}</button>
-                @endif
-            </div>
-        </form>
+    <div class="mb-4">
+        <button type="button" wire:click="openTreatmentForm" class="app-btn-primary px-4 py-2 text-sm font-medium">
+            {{ __('Add new treatment') }}
+        </button>
     </div>
 
-    <div class="app-card overflow-x-auto shadow-sm">
-        <table class="app-divider min-w-full divide-y text-left text-sm">
-            <thead class="app-text-gray text-xs font-semibold uppercase">
-                <tr>
-                    <th class="px-4 py-3">{{ __('Description') }}</th>
-                    <th class="px-4 py-3">{{ __('Qty') }}</th>
-                    <th class="px-4 py-3">{{ __('Unit') }}</th>
-                    <th class="px-4 py-3">{{ __('Line total') }}</th>
-                    <th class="px-4 py-3 text-end">{{ __('Actions') }}</th>
-                </tr>
-            </thead>
-            <tbody class="app-divider divide-y">
-                @forelse ($lines as $line)
-                    <tr wire:key="ti-{{ $line->id }}">
-                        <td class="px-4 py-3">{{ $line->description }}</td>
-                        <td class="px-4 py-3">{{ $line->quantity }}</td>
-                        <td class="px-4 py-3">{{ $line->unit_price }}</td>
-                        <td class="px-4 py-3 font-medium">{{ $line->line_total }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <button type="button" wire:click="startEdit({{ $line->id }})" class="app-title hover:underline">{{ __('Edit') }}</button>
-                            <span class="app-text-muted">|</span>
-                            <button type="button" wire:click="deleteLine({{ $line->id }})" wire:confirm="{{ __('Delete this line?') }}" class="text-red-600 hover:underline">{{ __('Delete') }}</button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="app-text-muted px-4 py-6 text-center">{{ __('No treatment lines yet.') }}</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    @if($showTreatmentForm)
+        <div class="fixed inset-0 z-40 bg-black/25" aria-hidden="true"></div>
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="app-card w-full max-w-xl bg-white p-5 shadow-xl">
+                <h2 class="app-title mb-4 text-lg font-medium">{{ $editingTreatmentId ? __('Edit treatment') : __('Add treatment') }}</h2>
+                <form wire:submit="saveTreatment" class="space-y-4">
+                    <div>
+                        <label class="app-text-gray block text-sm font-medium">{{ __('Treatment type / description') }}</label>
+                        <input type="text" wire:model="treatmentDescription" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                        @error('treatmentDescription') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="app-text-gray block text-sm font-medium">{{ __('Global price') }}</label>
+                        <input type="text" wire:model="globalPrice" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                        @error('globalPrice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium">{{ __('Save treatment') }}</button>
+                        <button type="button" wire:click="cancelTreatmentEdit" class="app-btn-secondary px-4 py-2 text-sm">{{ __('Cancel') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    <div class="space-y-6">
+        @forelse ($treatments as $treatment)
+            @php
+                $totalPaid = number_format((float) $treatment->sessions->sum(fn($session) => (float) $session->received_payment), 2, '.', '');
+                $remaining = number_format((float) $treatment->remaining_amount, 2, '.', '');
+                $hasRemaining = (float) $remaining > 0;
+                $status = (float) $remaining <= 0 ? __('Paid') : ((float) $totalPaid > 0 ? __('Partially paid') : __('Non paid'));
+                $statusStyle = (float) $remaining <= 0
+                    ? 'background-color: color-mix(in srgb, #22c55e 22%, white); color: #166534;'
+                    : ((float) $totalPaid > 0
+                        ? 'background-color: color-mix(in srgb, #3b82f6 20%, white); color: #1d4ed8;'
+                        : 'background-color: color-mix(in srgb, #f59e0b 26%, white); color: #b45309;');
+                $form = $sessionForms[$treatment->id] ?? ['session_date' => now()->format('Y-m-d\TH:i'), 'received_payment' => '0.00', 'notes' => ''];
+            @endphp
+            <div class="app-card overflow-hidden shadow-sm" wire:key="treatment-{{ $treatment->id }}">
+                <div class="border-b px-5 py-3" style="background-color: var(--color-action-primary); border-color: color-mix(in srgb, var(--color-action-primary) 82%, black);">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex items-center gap-2 overflow-x-auto">
+                            <h2 class="shrink-0 text-lg font-semibold text-white">{{ $treatment->description }}</h2>
+                            
+                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium" style="background-color: color-mix(in srgb, white 16%, transparent); color: white;">
+                            {{ __('Global: :value DH', ['value' => number_format((float) $treatment->global_price, 2, '.', '')]) }}
+                        </span>
+                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium" style="background-color: color-mix(in srgb, white 16%, transparent); color: white;">
+                            {{ __('Payé: :value DH', ['value' => $totalPaid]) }}
+                        </span>
+                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium {{ $hasRemaining ? 'border' : '' }}" style="background-color: color-mix(in srgb, white 16%, transparent); {{ $hasRemaining ? 'border-color: #fdba74;' : '' }} color: white;">
+                            {{ __('Reste: :value DH', ['value' => $remaining]) }}
+                        </span>
+                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold" style="{{ $statusStyle }}">
+                            {{ $status }}
+                        </span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm whitespace-nowrap">
+                            <button
+                                type="button"
+                                wire:click="startEditTreatment({{ $treatment->id }})"
+                                class="inline-flex items-center justify-center rounded-md hover:bg-white/15"
+                                style="width: 21px; height: 21px;"
+                                title="{{ __('Modifier') }}"
+                                aria-label="{{ __('Modifier') }}"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 1 1 2.97 2.97L8.25 18.04l-3.75.78.78-3.75L16.862 3.487z" />
+                                </svg>
+                            </button>
+                            <button
+                                type="button"
+                                wire:click="deleteTreatment({{ $treatment->id }})"
+                                wire:confirm="{{ __('Supprimer ce traitement ?') }}"
+                                class="inline-flex items-center justify-center rounded-md hover:bg-white/15"
+                                style="width: 21px; height: 21px;"
+                                title="{{ __('Supprimer') }}"
+                                aria-label="{{ __('Supprimer') }}"
+                            >
+                                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                    <path d="M10 11v6"/>
+                                    <path d="M14 11v6"/>
+                                    <path d="M9 6V4h6v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="app-divider p-5 pt-3">
+                    <div class="mb-3 flex items-center justify-center">
+                        <button type="button" wire:click="openSessionForm({{ $treatment->id }})" class="app-btn-primary px-3 py-1.5 text-sm" title="{{ __('Ajouter une séance') }}">+</button>
+                    </div>
+
+                    @if($activeSessionFormTreatmentId === $treatment->id)
+                        <form wire:submit.prevent="saveSession({{ $treatment->id }})" class="flex flex-wrap items-end gap-3">
+                            <div class="min-w-[220px] flex-1">
+                                <label class="app-text-gray block text-sm font-medium">{{ __('Date') }}</label>
+                                <input type="datetime-local" wire:model="sessionForms.{{ $treatment->id }}.session_date" class="app-input mt-1 block w-full px-3 py-2 text-sm" value="{{ $form['session_date'] }}" />
+                            </div>
+                            <div class="min-w-[140px] w-[180px]">
+                                <label class="app-text-gray block text-sm font-medium">{{ __('Reçu') }}</label>
+                                <input type="text" wire:model="sessionForms.{{ $treatment->id }}.received_payment" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                            </div>
+                            <div class="min-w-[260px] flex-[2]">
+                                <label class="app-text-gray block text-sm font-medium">{{ __('Natures des Opérations') }}</label>
+                                <input type="text" wire:model="sessionForms.{{ $treatment->id }}.notes" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium" @disabled((float) $remaining <= 0)>{{ $editingSessionId && $editingSessionTreatmentId === $treatment->id ? __('Update session') : __('Add session payment') }}</button>
+                                <button type="button" wire:click="cancelSessionEdit({{ $treatment->id }})" class="app-btn-secondary px-4 py-2 text-sm">{{ __('Cancel') }}</button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+
+                <div class="px-5 pb-5">
+                <div class="mt-2 overflow-x-auto">
+                    <table class="app-divider min-w-full divide-y text-left text-sm">
+                        <thead class="app-text-gray text-xs font-semibold uppercase">
+                            <tr>
+                                <th class="px-4 py-3">{{ __('Dates') }}</th>
+                                <th class="px-4 py-3">{{ __('Natures des Opérations') }}</th>
+                                <th class="px-4 py-3">{{ __('Reçu') }}</th>
+                                <th class="px-4 py-3 text-end">{{ __('Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="app-divider divide-y">
+                            @forelse ($treatment->sessions as $session)
+                                <tr wire:key="session-{{ $session->id }}">
+                                    <td class="px-4 py-3">{{ $session->session_date?->format('n/j/Y g:i:s A') }}</td>
+                                    <td class="px-4 py-3">{{ $session->notes }}</td>
+                                    <td class="px-4 py-3">{{ number_format((float) $session->received_payment, 2, '.', '') }} DH</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button type="button" wire:click="startEditSession({{ $treatment->id }}, {{ $session->id }})" class="app-title hover:underline">{{ __('Edit') }}</button>
+                                        <span class="app-text-muted">|</span>
+                                        <button type="button" wire:click="deleteSession({{ $session->id }})" wire:confirm="{{ __('Delete this session payment?') }}" class="text-red-600 hover:underline">{{ __('Delete') }}</button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="app-text-muted px-4 py-6 text-center">{{ __('No session payments yet.') }}</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+        @empty
+            <div class="app-card p-6 text-center app-text-muted">{{ __('No treatments yet.') }}</div>
+        @endforelse
     </div>
 </div>

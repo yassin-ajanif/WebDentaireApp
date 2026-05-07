@@ -16,7 +16,7 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
         return Patient::query()->whereKey($patientId)->exists();
     }
 
-    public function paginate(?string $search, int $perPage = 15): LengthAwarePaginator
+    public function paginate(?string $search, string $paymentFilter = 'all', int $perPage = 15): LengthAwarePaginator
     {
         $q = Patient::query()->orderByDesc('id');
 
@@ -28,6 +28,17 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
                     ->orWhereRaw('LOWER(last_name) LIKE ?', [$like])
                     ->orWhereRaw('LOWER(telephone) LIKE ?', [$like]);
             });
+        }
+
+        if ($paymentFilter === 'unpaid') {
+            $q->whereHas('treatmentInfos', function ($inner): void {
+                $inner->where('remaining_amount', '>', 0);
+            });
+        } elseif ($paymentFilter === 'paid') {
+            $q->whereHas('treatmentInfos')
+                ->whereDoesntHave('treatmentInfos', function ($inner): void {
+                    $inner->where('remaining_amount', '>', 0);
+                });
         }
 
         return $q->paginate($perPage);
