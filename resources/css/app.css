@@ -1,0 +1,238 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../app/**/*.blade.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    --color-raw-primary-blue: #2e4682;
+    --color-raw-primary-green: #7a9e7e;
+    --color-raw-surface-faint-green: #e7ede3;
+    --color-raw-neutral-gray: #d9d9d9;
+    --color-raw-gray-stroke: #b0b0b0;
+    --color-raw-text-gray: #5c6368;
+    --color-raw-text-gray-muted: #949da3;
+
+    --color-background-app: var(--color-raw-surface-faint-green);
+    --color-background-card: rgb(217 217 217 / 0.3);
+    --brush-stroke-system: var(--color-raw-primary-green);
+    --brush-stroke-disabled: var(--color-raw-neutral-gray);
+    --brush-stroke-gray: var(--color-raw-gray-stroke);
+    --color-border-default: var(--color-raw-primary-green);
+    --color-text-primary: var(--color-raw-primary-blue);
+    --color-text-secondary: var(--color-raw-primary-green);
+    --color-text-gray: var(--color-raw-text-gray);
+    --color-text-gray-muted: var(--color-raw-text-gray-muted);
+    --color-action-primary: var(--color-raw-primary-blue);
+    --color-accent-success: var(--color-raw-primary-green);
+}
+
+@layer base {
+    html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        min-height: 100%;
+        background-color: var(--color-background-app);
+        overflow-x: clip;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+    }
+
+    html[dir='rtl'] {
+        font-family: system-ui, 'Segoe UI', Tahoma, Arial, 'Noto Sans Arabic', sans-serif;
+    }
+}
+
+@layer components {
+    .app-bg {
+        background-color: var(--color-background-app);
+        color: var(--color-text-primary);
+    }
+
+    /* Full-page stretch background.svg */
+    .app-body-clinic {
+        background-color: var(--color-background-app);
+        background-clip: border-box;
+        background-origin: border-box;
+        background-position: 0 0;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        box-sizing: border-box;
+        color: var(--color-text-primary);
+    }
+
+    /* Push main UI right so titles/cards clear the SVG doctor name + tooth on the left */
+    .app-clinic-main-shift {
+        padding-left: clamp(6.5rem, 16vw, 10rem);
+    }
+
+    @media (min-width: 768px) {
+        .app-clinic-main-shift {
+            padding-left: clamp(13rem, 32vw, 26rem);
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .app-clinic-main-shift {
+            padding-left: clamp(15rem, 30vw, 28rem);
+        }
+    }
+
+    .app-card {
+        background-color: var(--color-background-card);
+        border: 1px solid var(--color-border-default);
+        border-radius: 0.5rem;
+    }
+
+    /* Queue card when consultation is running — dark panel, badge above name, mint time */
+    .app-queue-card-en-cours {
+        background-color: var(--color-raw-primary-blue);
+        border: 1px solid color-mix(in srgb, var(--color-raw-primary-blue) 80%, #000);
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+    }
+
+    .app-queue-card-en-cours-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.375rem;
+        background-color: var(--color-raw-neutral-gray);
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .app-queue-card-en-cours-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 9999px;
+        padding: 0.125rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        background-color: rgb(255 255 255 / 0.22);
+        color: #fff;
+        margin-bottom: 0.25rem;
+    }
+
+    .app-queue-card-en-cours-name {
+        color: #fff;
+        font-size: clamp(1rem, 0.85rem + 0.6vw, 1.35rem);
+        font-weight: 600;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .app-queue-card-en-cours-time {
+        color: #b8e5c8;
+        font-size: 0.875rem;
+        font-weight: 500;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .app-queue-card-en-cours-actions {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgb(255 255 255 / 0.12);
+        text-align: right;
+        font-size: 0.75rem;
+    }
+
+    .app-queue-card-en-cours-actions .app-queue-action {
+        color: rgb(255 255 255 / 0.92);
+    }
+
+    .app-queue-card-en-cours-actions .app-queue-action:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+    .app-queue-card-en-cours-actions .app-queue-action-cancel {
+        color: #fca5a5;
+    }
+
+    .app-queue-card-en-cours-actions .app-queue-action-cancel:hover {
+        color: #fecaca;
+    }
+
+    .app-queue-card-en-cours-actions .app-queue-action-sep {
+        color: rgb(255 255 255 / 0.35);
+    }
+
+    .app-title {
+        color: var(--color-text-primary);
+    }
+
+    .app-subtitle {
+        color: var(--color-text-secondary);
+    }
+
+    .app-text-gray {
+        color: var(--color-text-gray);
+    }
+
+    .app-text-muted {
+        color: var(--color-text-gray-muted);
+    }
+
+    .app-divider {
+        border-color: var(--brush-stroke-gray);
+    }
+
+    .app-input {
+        border: 1px solid var(--brush-stroke-gray);
+        border-radius: 0.375rem;
+        background-color: #fff;
+        color: var(--color-text-primary);
+    }
+
+    .app-input:focus {
+        outline: none;
+        border-color: var(--color-border-default);
+        box-shadow: 0 0 0 1px var(--color-border-default);
+    }
+
+    .app-btn-primary {
+        background-color: var(--color-action-primary);
+        color: #fff;
+        border-radius: 0.375rem;
+    }
+
+    .app-btn-primary:hover {
+        filter: brightness(0.95);
+    }
+
+    .app-btn-secondary {
+        border: 1px solid var(--brush-stroke-gray);
+        color: var(--color-text-gray);
+        background-color: #fff;
+        border-radius: 0.375rem;
+    }
+
+    .app-btn-secondary:hover {
+        background-color: var(--color-background-card);
+    }
+}
