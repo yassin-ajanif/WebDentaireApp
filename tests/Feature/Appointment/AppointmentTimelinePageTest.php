@@ -81,6 +81,7 @@ class AppointmentTimelinePageTest extends TestCase
             ->assertSee('Nadia Karim')
             ->assertSee('14:41 - 14:42')
             ->assertSee('120.00')
+            ->assertSee('/patients/'.$completedPatient->id.'/treatments')
             ->assertDontSee('Salim Test');
 
         Carbon::setTestNow();

@@ -2,6 +2,7 @@
 
 use App\Entities\Appointment\AppointmentServiceProvider;
 use App\Entities\Patient\PatientServiceProvider;
+use App\Entities\Report\ReportServiceProvider;
 use App\Entities\Setting\SettingServiceProvider;
 use App\Entities\TreatmentInfo\TreatmentInfoServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -12,4 +13,5 @@ return [
     SettingServiceProvider::class,
     AppointmentServiceProvider::class,
     TreatmentInfoServiceProvider::class,
+    ReportServiceProvider::class,
 ];

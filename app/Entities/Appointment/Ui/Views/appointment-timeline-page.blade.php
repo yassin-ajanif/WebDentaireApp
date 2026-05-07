@@ -45,18 +45,35 @@
 
         <div class="px-2 py-0">
             @forelse($rows as $row)
-                <div class="grid border-b py-1"
-                    style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
-                    <div class="whitespace-nowrap text-xs font-medium app-title">
-                        {{ $row['off'] }}
+                @if($row['patient_id'])
+                    <a href="{{ route('treatments.index', ['patient' => $row['patient_id']]) }}"
+                        class="grid border-b px-1 py-0.5 leading-tight transition-colors hover:rounded hover:bg-[color:color-mix(in_srgb,var(--color-raw-primary-blue)_12%,white)]"
+                        style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);"
+                        title="{{ __('Voir les traitements') }}">
+                        <span class="whitespace-nowrap text-xs font-medium app-title">
+                            {{ $row['off'] }}
+                        </span>
+                        <span class="whitespace-nowrap" style="font-size: 10px; font-weight: 700; color: #ea580c;">
+                            {{ $row['started_at'] }} - {{ $row['completed_at'] }}
+                        </span>
+                        <span class="whitespace-nowrap text-right text-xs" style="color: {{ ((float) $row['received']) > 0 ? '#16a34a' : '#dc2626' }};">
+                            {{ $row['received'] }}
+                        </span>
+                    </a>
+                @else
+                    <div class="grid border-b px-1 py-0.5 leading-tight"
+                        style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
+                        <span class="whitespace-nowrap text-xs font-medium app-title">
+                            {{ $row['off'] }}
+                        </span>
+                        <span class="whitespace-nowrap" style="font-size: 10px; font-weight: 700; color: #ea580c;">
+                            {{ $row['started_at'] }} - {{ $row['completed_at'] }}
+                        </span>
+                        <span class="whitespace-nowrap text-right text-xs" style="color: {{ ((float) $row['received']) > 0 ? '#16a34a' : '#dc2626' }};">
+                            {{ $row['received'] }}
+                        </span>
                     </div>
-                    <div class="whitespace-nowrap" style="font-size: 10px; font-weight: 700; color: #ea580c;">
-                        {{ $row['started_at'] }} - {{ $row['completed_at'] }}
-                    </div>
-                    <div class="whitespace-nowrap text-right text-xs" style="color: {{ ((float) $row['received']) > 0 ? '#16a34a' : '#dc2626' }};">
-                        {{ $row['received'] }}
-                    </div>
-                </div>
+                @endif
             @empty
                 <div class="py-3 text-center text-xs app-text-muted">{{ __('Aucun rendez-vous pour cette date.') }}</div>
             @endforelse

@@ -79,7 +79,9 @@
     <div class="space-y-6">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             @forelse($done as $appt)
-                <div wire:key="done-{{ $appt->id }}" class="app-card min-w-0 p-4">
+                <div wire:key="done-{{ $appt->id }}"
+                     class="app-card min-w-0 p-4 {{ $appt->patient_id ? 'cursor-pointer' : '' }}"
+                     @if($appt->patient_id) ondblclick="window.location.href='{{ route('treatments.index', ['patient' => $appt->patient_id]) }}'" @endif>
                     <div class="mb-1 flex items-center justify-between">
                         <span class="app-text-gray inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-sm font-semibold" style="background-color: var(--color-raw-neutral-gray);">{{ $queuePositionById[$appt->id] }}</span>
                         <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold" style="background-color: color-mix(in srgb, var(--color-raw-gray-stroke) 45%, white); color: var(--color-text-gray);">{{ __('Terminé') }}</span>
@@ -103,7 +105,9 @@
                         $isInProgress = $appt->status === \App\Entities\Appointment\Enums\AppointmentStatus::InProgress;
                     @endphp
                     @if($isInProgress)
-                        <div wire:key="active-{{ $appt->id }}" class="app-queue-card-en-cours min-w-0 p-4">
+                        <div wire:key="active-{{ $appt->id }}"
+                             class="app-queue-card-en-cours min-w-0 p-4 {{ $appt->patient_id ? 'cursor-pointer' : '' }}"
+                             @if($appt->patient_id) ondblclick="window.location.href='{{ route('treatments.index', ['patient' => $appt->patient_id]) }}'" @endif>
                             <div class="flex items-center gap-4">
                                 <span class="app-queue-card-en-cours-num">{{ $queuePositionById[$appt->id] }}</span>
                                 <div class="min-w-0 flex-1">
@@ -115,7 +119,9 @@
                             @include('appointment::queue-inline-actions', ['appointment' => $appt, 'variant' => 'dark'])
                         </div>
                     @else
-                        <div wire:key="active-{{ $appt->id }}" class="app-card min-w-0 p-4">
+                        <div wire:key="active-{{ $appt->id }}"
+                             class="app-card min-w-0 p-4 {{ $appt->patient_id ? 'cursor-pointer' : '' }}"
+                             @if($appt->patient_id) ondblclick="window.location.href='{{ route('treatments.index', ['patient' => $appt->patient_id]) }}'" @endif>
                             <div class="mb-1 flex items-center gap-3">
                                 <span class="app-text-gray inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-sm font-semibold" style="background-color: var(--color-raw-neutral-gray);">{{ $queuePositionById[$appt->id] }}</span>
                                 <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold" style="background-color: color-mix(in srgb, #f3c26f 35%, white); color: #9a620d;">{{ $statusLabel }}</span>
@@ -135,7 +141,9 @@
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             @forelse($cancelled as $appt)
-                <div wire:key="cancel-{{ $appt->id }}" class="app-card min-w-0 p-4">
+                <div wire:key="cancel-{{ $appt->id }}"
+                     class="app-card min-w-0 p-4 {{ $appt->patient_id ? 'cursor-pointer' : '' }}"
+                     @if($appt->patient_id) ondblclick="window.location.href='{{ route('treatments.index', ['patient' => $appt->patient_id]) }}'" @endif>
                     <div class="mb-1 flex items-center justify-between">
                         <span class="app-text-gray inline-flex min-w-8 items-center justify-center rounded-md px-2 py-1 text-sm font-semibold" style="background-color: var(--color-raw-neutral-gray);">{{ $queuePositionById[$appt->id] }}</span>
                         <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold" style="background-color: color-mix(in srgb, #ef4444 18%, white); color: #dc2626;">{{ __('Annulé') }}</span>

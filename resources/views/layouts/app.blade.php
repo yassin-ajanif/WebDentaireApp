@@ -29,6 +29,11 @@
                    @if(request()->routeIs('queue.timeline')) style="border-color: var(--color-raw-primary-blue);" @endif>
                     {{ __('Chronologie') }}
                 </a>
+                <a href="{{ route('reports.index') }}"
+                   class="inline-block border-b-2 pb-1 transition-colors {{ request()->routeIs('reports.*') ? 'app-title' : 'border-transparent app-text-gray hover:app-title' }}"
+                   @if(request()->routeIs('reports.*')) style="border-color: var(--color-raw-primary-blue);" @endif>
+                    {{ __('Reports') }}
+                </a>
             </nav>
             <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                 <div class="app-input inline-flex rounded-md p-0.5 text-xs font-medium" role="group" aria-label="{{ __('Language') }}">
