@@ -4,14 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? config('app.name') }}</title>
+    {{-- Absolute URLs for body backgrounds: root-relative /backgrounds/... breaks under Vite dev (wrong origin). --}}
+    <style>
+        :root {
+            --app-bg-clinic: url("{{ asset('backgrounds/background.svg') }}");
+            --app-bg-clinic-empty: url("{{ asset('backgrounds/emptyBackground.svg') }}");
+        }
+    </style>
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
     @livewireStyles
 </head>
-<body class="app-body-clinic min-h-screen antialiased"
-      style="background-image: url('{{ asset('backgrounds/background.svg') }}');">
-    <div class="app-clinic-main-shift w-full max-w-none py-6 pr-4 sm:pr-6">
+<body class="app-body-clinic min-h-screen antialiased">
+    <div class="app-clinic-main-shift w-full max-w-none py-6">
         <header class="app-divider mb-8 flex flex-row flex-wrap items-center justify-between gap-4 border-b pb-4">
             <nav class="flex flex-wrap items-end gap-8 text-sm font-medium" aria-label="{{ __('Main navigation') }}">
                 <a href="{{ route('queue.index') }}"
@@ -36,12 +42,11 @@
                 </a>
             </nav>
             <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-                <div class="app-input inline-flex rounded-md p-0.5 text-xs font-medium" role="group" aria-label="{{ __('Language') }}">
-                    <a href="{{ route('locale.switch', ['locale' => 'fr']) }}"
-                       class="rounded px-2 py-1 no-underline {{ app()->getLocale() === 'fr' ? 'bg-white shadow-sm app-title' : 'app-text-gray hover:app-title' }}">FR</a>
-                    <a href="{{ route('locale.switch', ['locale' => 'ar']) }}"
-                       class="rounded px-2 py-1 no-underline {{ app()->getLocale() === 'ar' ? 'bg-white shadow-sm app-title' : 'app-text-gray hover:app-title' }}">عربي</a>
-                </div>
+                <a href="{{ route('locale.switch', ['locale' => app()->getLocale() === 'ar' ? 'fr' : 'ar']) }}"
+                   class="app-input inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium no-underline app-text-gray hover:app-title hover:bg-white/90"
+                   aria-label="{{ app()->getLocale() === 'ar' ? __('Switch to French') : __('Switch to Arabic') }}">
+                    {{ app()->getLocale() === 'ar' ? 'FR' : 'عربي' }}
+                </a>
                 <a href="{{ route('settings.queue') }}"
                    class="app-input inline-flex shrink-0 items-center justify-center rounded-md p-2 text-[var(--color-raw-primary-blue)] hover:bg-white/90"
                    aria-label="{{ __('Réglages') }}"

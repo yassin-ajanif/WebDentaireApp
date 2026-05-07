@@ -1,10 +1,12 @@
 <div class="pb-4 pl-0 pr-3 pt-1 sm:pr-4">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-            <h1 class="app-title text-xl font-semibold">{{ __('Chronologie des rendez-vous') }}</h1>
-            <p class="app-subtitle mt-0.5 text-xs">{{ __('Grille horaire de 08:00 à 22:00') }}</p>
-        </div>
-        <div class="flex items-center gap-2">
+        <h1 class="app-title text-xl font-semibold">{{ __('Chronologie des rendez-vous') }}</h1>
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2">
+                <label for="timeline-date" class="sr-only">{{ __('Date') }}</label>
+                <input id="timeline-date" type="date" wire:model.live="selectedDate"
+                    class="app-input px-2 py-1.5 text-sm shadow-sm" />
+            </div>
             <button type="button" wire:click="previousDay"
                 class="app-btn-secondary px-3 py-1.5 text-sm">←</button>
             <button type="button" wire:click="today"

@@ -12,10 +12,6 @@ class AppointmentTimelinePage extends Component
 {
     public string $selectedDate = '';
 
-    public int $hourStart = 8;
-
-    public int $hourEnd = 22;
-
     public function mount(): void
     {
         $this->selectedDate = Carbon::today()->toDateString();

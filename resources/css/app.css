@@ -64,9 +64,10 @@
         color: var(--color-text-primary);
     }
 
-    /* Full-page stretch background.svg */
+    /* Full-page background: main art from md up; plain empty art on small viewports (max-width 768px). */
     .app-body-clinic {
         background-color: var(--color-background-app);
+        background-image: var(--app-bg-clinic);
         background-clip: border-box;
         background-origin: border-box;
         background-position: 0 0;
@@ -76,20 +77,30 @@
         color: var(--color-text-primary);
     }
 
-    /* Push main UI right so titles/cards clear the SVG doctor name + tooth on the left */
-    .app-clinic-main-shift {
-        padding-left: clamp(6.5rem, 16vw, 10rem);
+    @media (max-width: 768px) {
+        .app-body-clinic {
+            background-image: var(--app-bg-clinic-empty);
+        }
+    }
+
+    /* Mobile: symmetric gutters. md+: left inset for SVG artwork + right padding. */
+    @media (max-width: 767.98px) {
+        .app-clinic-main-shift {
+            padding-inline: 15px;
+        }
     }
 
     @media (min-width: 768px) {
         .app-clinic-main-shift {
             padding-left: clamp(13rem, 32vw, 26rem);
+            padding-right: 1rem;
         }
     }
 
     @media (min-width: 1280px) {
         .app-clinic-main-shift {
             padding-left: clamp(15rem, 30vw, 28rem);
+            padding-right: 1.5rem;
         }
     }
 

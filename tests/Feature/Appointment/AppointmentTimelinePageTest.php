@@ -20,7 +20,7 @@ class AppointmentTimelinePageTest extends TestCase
         $this->get('/queue/timeline')->assertOk();
     }
 
-    public function test_timeline_renders_plain_agenda_grid_from_8_to_22(): void
+    public function test_timeline_renders_table_headers_and_total(): void
     {
         $this->get('/queue/timeline')
             ->assertOk()
