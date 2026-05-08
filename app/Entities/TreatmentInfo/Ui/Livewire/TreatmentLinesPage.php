@@ -6,6 +6,8 @@ use App\Entities\Appointment\Contracts\AppointmentServiceInterface;
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Patient\Contracts\PatientServiceInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
+use App\Entities\TreatmentInfo\Enums\SessionStatus;
+use App\Entities\TreatmentInfo\Enums\TreatmentStatus;
 use App\Entities\TreatmentInfo\Models\Session;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use DomainException;
@@ -164,6 +166,12 @@ class TreatmentLinesPage extends Component
             return;
         }
 
+        if ($session->status === SessionStatus::Cancelled->value) {
+            session()->flash('error', __('Cannot edit a cancelled session.'));
+
+            return;
+        }
+
         $this->expandedTreatments[$treatmentId] = true;
         $this->activeSessionFormTreatmentId = $treatmentId;
         $this->editingSessionId = $sessionId;
@@ -288,10 +296,14 @@ class TreatmentLinesPage extends Component
         $this->redirect(route('queue.index'));
     }
 
-    public function deleteSession(int $sessionId): void
+    public function cancelSession(int $sessionId): void
     {
-        $this->treatments()->deleteSession($sessionId);
-        session()->flash('status', __('Session payment removed.'));
+        try {
+            $this->treatments()->cancelSession($sessionId);
+            session()->flash('status', __('Session payment cancelled.'));
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
+        }
     }
 
     public function render()

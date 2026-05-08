@@ -15,6 +15,8 @@ class Session extends Model
         'session_date',
         'received_payment',
         'notes',
+        'status',
+        'cancelled_at',
     ];
 
     protected function casts(): array
@@ -22,6 +24,7 @@ class Session extends Model
         return [
             'session_date' => 'datetime',
             'received_payment' => 'decimal:2',
+            'cancelled_at' => 'datetime',
         ];
     }
 

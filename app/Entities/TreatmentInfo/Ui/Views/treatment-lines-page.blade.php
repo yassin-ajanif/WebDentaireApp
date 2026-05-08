@@ -66,7 +66,7 @@
     <div class="space-y-6">
         @forelse ($treatments as $treatment)
             @php
-                $totalPaid = number_format((float) $treatment->sessions->sum(fn($session) => (float) $session->received_payment), 2, '.', '');
+                $totalPaid = number_format((float) $treatment->sessions->filter(fn($s) => $s->status !== 'cancelled')->sum(fn($session) => (float) $session->received_payment), 2, '.', '');
                 $remaining = number_format((float) $treatment->remaining_amount, 2, '.', '');
                 $hasRemaining = (float) $remaining > 0;
                 $isExpanded = (bool) ($expandedTreatments[$treatment->id] ?? false);
@@ -215,15 +215,26 @@
                                         <tr wire:key="session-{{ $session->id }}"
                                             @if($isHighlightedSession)
                                                 data-highlighted-session="true"
-                                                style="background-color: color-mix(in srgb, #f59e0b 18%, white);"
-                                            @endif>
-                                            <td class="px-4 py-3">{{ $session->session_date?->format('n/j/Y g:i:s A') }}</td>
-                                            <td class="px-4 py-3">{{ $session->notes }}</td>
-                                            <td class="px-4 py-3">{{ number_format((float) $session->received_payment, 2, '.', '') }} DH</td>
+                                            @endif
+                                            style="{{ $session->status === 'cancelled' ? 'opacity: 0.5; background-color: #e5e7eb; text-decoration: line-through;' : ($isHighlightedSession ? 'background-color: color-mix(in srgb, #f59e0b 18%, white);' : '') }}">
+                                            <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">{{ $session->session_date?->format('n/j/Y g:i:s A') }}</td>
+                                            <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">
+                                                {{ $session->notes }}
+                                                @if($session->status === 'cancelled')
+                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                        {{ __('Cancelled') }}
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">{{ number_format((float) $session->received_payment, 2, '.', '') }} DH</td>
                                             <td class="px-4 py-3 text-right">
-                                                <button type="button" wire:click="startEditSession({{ $treatment->id }}, {{ $session->id }})" class="app-title hover:underline">{{ __('Edit') }}</button>
-                                                <span class="app-text-muted">|</span>
-                                                <button type="button" wire:click="deleteSession({{ $session->id }})" wire:confirm="{{ __('Delete this session payment?') }}" class="text-red-600 hover:underline">{{ __('Delete') }}</button>
+                                                @if($session->status !== 'cancelled')
+                                                    <button type="button" wire:click="startEditSession({{ $treatment->id }}, {{ $session->id }})" class="app-title hover:underline">{{ __('Edit') }}</button>
+                                                    <span class="app-text-muted">|</span>
+                                                    <button type="button" wire:click="cancelSession({{ $session->id }})" wire:confirm="{{ __('Cancel this session payment?') }}" class="text-red-600 hover:underline">{{ __('Cancel') }}</button>
+                                                @else
+                                                    <span class="text-xs app-text-muted italic">{{ __('No actions available') }}</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty

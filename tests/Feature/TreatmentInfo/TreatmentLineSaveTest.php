@@ -156,4 +156,35 @@ class TreatmentLineSaveTest extends TestCase
         $this->assertSame('new note', $correction->new_notes);
         $this->assertSame('Correction de saisie', $correction->reason);
     }
+
+    public function test_cancel_session_updates_status_and_syncs_remaining_amount(): void
+    {
+        $patient = Patient::query()->create([
+            'first_name' => 'A',
+            'last_name' => 'B',
+            'telephone' => '0611111111',
+            'notes' => null,
+        ]);
+
+        $svc = app(TreatmentInfoServiceInterface::class);
+        $treatment = $svc->createTreatment($patient->id, [
+            'description' => 'Whitening',
+            'global_price' => '300.00',
+        ]);
+
+        $session = $svc->createSession($treatment->id, [
+            'session_date' => now(),
+            'received_payment' => '100.00',
+            'notes' => 'first payment',
+        ]);
+
+        $this->assertSame('200.00', (string) $treatment->fresh()->remaining_amount);
+
+        $svc->cancelSession($session->id);
+
+        $session = $session->fresh();
+        $this->assertSame('cancelled', $session->status);
+        $this->assertNotNull($session->cancelled_at);
+        $this->assertSame('300.00', (string) $treatment->fresh()->remaining_amount);
+    }
 }

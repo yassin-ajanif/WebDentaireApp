@@ -75,11 +75,13 @@ class AppointmentService implements AppointmentServiceInterface
 
         $paymentsByPatientDay = DB::table('treatment_sessions as ts')
             ->join('treatment_infos as ti', 'ti.id', '=', 'ts.treatment_info_id')
+            ->where('ts.status', '!=', 'cancelled')
             ->selectRaw('ti.patient_id as patient_id, DATE(ts.created_at) as paid_date, SUM(ts.received_payment) as received_total')
             ->groupBy('ti.patient_id', DB::raw('DATE(ts.created_at)'));
 
         $latestSessionByPatientDay = DB::table('treatment_sessions as ts')
             ->join('treatment_infos as ti', 'ti.id', '=', 'ts.treatment_info_id')
+            ->where('ts.status', '!=', 'cancelled')
             ->selectRaw('ti.patient_id as patient_id, DATE(ts.created_at) as paid_date, MAX(ts.id) as latest_session_id')
             ->groupBy('ti.patient_id', DB::raw('DATE(ts.created_at)'));
 

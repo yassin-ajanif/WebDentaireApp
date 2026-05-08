@@ -4,6 +4,7 @@ namespace App\Entities\TreatmentInfo\Services;
 
 use App\Entities\Appointment\Contracts\PatientLookupInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
+use App\Entities\TreatmentInfo\Enums\SessionStatus;
 use App\Entities\TreatmentInfo\Enums\TreatmentStatus;
 use App\Entities\TreatmentInfo\Models\Session;
 use App\Entities\TreatmentInfo\Models\SessionCorrection;
@@ -141,6 +142,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
             /** @var Session $session */
             $session = Session::query()->findOrFail($sessionId);
 
+            if ($session->status === SessionStatus::Cancelled) {
+                throw new DomainException(__('Cannot update a cancelled session.'));
+            }
+
             /** @var TreatmentInfo $treatment */
             $treatment = TreatmentInfo::query()
                 ->lockForUpdate()
@@ -181,7 +186,7 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
         });
     }
 
-    public function deleteSession(int $sessionId): void
+    public function cancelSession(int $sessionId): void
     {
         DB::transaction(function () use ($sessionId) {
             /** @var Session $session */
@@ -194,10 +199,14 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->findOrFail($session->treatment_info_id);
 
             if ($treatment->status === TreatmentStatus::Cancelled) {
-                throw new DomainException(__('Cannot delete session of a cancelled treatment.'));
+                throw new DomainException(__('Cannot cancel session of a cancelled treatment.'));
             }
 
-            $session->delete();
+            $session->update([
+                'status' => SessionStatus::Cancelled,
+                'cancelled_at' => now(),
+            ]);
+
             $this->syncRemainingAmount($treatment);
         });
     }
@@ -326,6 +335,7 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
     private function sumSessionPayments(TreatmentInfo $treatment): string
     {
         return $treatment->sessions
+            ->filter(fn (Session $session) => $session->status === SessionStatus::Active->value)
             ->reduce(
                 fn (string $carry, Session $session): string => bcadd($carry, (string) $session->received_payment, 2),
                 '0.00'

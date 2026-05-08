@@ -27,7 +27,7 @@ interface TreatmentInfoServiceInterface
 
     public function updateSession(int $sessionId, array $data): Session;
 
-    public function deleteSession(int $sessionId): void;
+    public function cancelSession(int $sessionId): void;
 
     /**
      * @return Collection<int, TreatmentCorrection>
