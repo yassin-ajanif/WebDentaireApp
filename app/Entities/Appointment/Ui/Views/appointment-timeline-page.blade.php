@@ -36,7 +36,7 @@
         </div>
     @endif
 
-    <div class="overflow-hidden rounded-xl border bg-white/80"
+    <div class="mb-6 overflow-hidden rounded-xl border bg-white/80"
         style="border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
         <div class="grid border-b px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide app-text-gray"
             style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
@@ -84,9 +84,57 @@
         <div class="border-t px-2 py-2"
             style="border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
             <div class="grid items-center" style="grid-template-columns: 1.2fr 1fr 0.8fr;">
-                <span class="col-start-1 col-end-3 text-xs font-semibold app-text-gray">{{ __('Total à remettre au médecin:') }}</span>
-                <span class="whitespace-nowrap text-sm font-semibold app-title" style="grid-column: 3 / 4; justify-self: end;">{{ $totalReceived }} DH</span>
+                <span class="col-start-1 col-end-3 text-xs font-semibold app-text-gray">{{ __('Total reçu:') }}</span>
+                <span class="whitespace-nowrap text-sm font-semibold" style="grid-column: 3 / 4; justify-self: end; color: #16a34a;">+{{ $totalReceived }} DH</span>
             </div>
+        </div>
+    </div>
+
+    @if($cancellations->isNotEmpty())
+        <div class="mt-8 overflow-hidden rounded-xl border bg-white/80"
+            style="border-color: color-mix(in srgb, #dc2626 35%, white);">
+            <div class="grid border-b px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide app-text-gray"
+                style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
+                <div class="whitespace-nowrap">{{ __('Patient') }}</div>
+                <div class="whitespace-nowrap">{{ __('Traitement annulé') }}</div>
+                <div class="whitespace-nowrap text-right">{{ __('Remboursement (DH)') }}</div>
+            </div>
+            <div class="px-2 py-0">
+                @foreach($cancellations as $cancellation)
+                    @if($cancellation['patient_id'])
+                        <a href="{{ route('treatments.index', ['patient' => $cancellation['patient_id'], 'treatment' => $cancellation['treatment_id']]) }}"
+                            class="grid border-b px-1 py-0.5 leading-tight transition-colors hover:rounded hover:bg-[color:color-mix(in_srgb,#dc2626_12%,white)]"
+                            style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);"
+                            title="{{ __('Voir les traitements') }}">
+                            <span class="whitespace-nowrap text-xs font-medium app-title">{{ $cancellation['patient_name'] }}</span>
+                            <span class="whitespace-nowrap text-xs" style="color: #991b1b;">{{ $cancellation['treatment_description'] }}</span>
+                            <span class="whitespace-nowrap text-right text-xs font-semibold" style="color: #dc2626;">-{{ number_format($cancellation['refund_amount'], 2, '.', '') }}</span>
+                        </a>
+                    @else
+                        <div class="grid border-b px-1 py-0.5 leading-tight"
+                            style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
+                            <span class="whitespace-nowrap text-xs font-medium app-title">{{ $cancellation['patient_name'] }}</span>
+                            <span class="whitespace-nowrap text-xs" style="color: #991b1b;">{{ $cancellation['treatment_description'] }}</span>
+                            <span class="whitespace-nowrap text-right text-xs font-semibold" style="color: #dc2626;">-{{ number_format($cancellation['refund_amount'], 2, '.', '') }}</span>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+            <div class="border-t px-2 py-2"
+                style="border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
+                <div class="grid items-center" style="grid-template-columns: 1.2fr 1fr 0.8fr;">
+                    <span class="col-start-1 col-end-3 text-xs font-semibold app-text-gray">{{ __('Total remboursé:') }}</span>
+                    <span class="whitespace-nowrap text-sm font-semibold" style="grid-column: 3 / 4; justify-self: end; color: #dc2626;">-{{ $totalCancelled }} DH</span>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <div class="mt-4 rounded-xl border px-4 py-3"
+        style="border-color: color-mix(in srgb, var(--color-raw-primary-blue) 45%, white); background-color: color-mix(in srgb, var(--color-raw-primary-blue) 8%, white);">
+        <div class="flex items-center justify-between">
+            <span class="text-sm font-bold app-title">{{ __('Net à remettre au médecin:') }}</span>
+            <span class="text-lg font-bold" style="color: {{ $netTotal >= 0 ? '#16a34a' : '#dc2626' }};">{{ $netTotal }} DH</span>
         </div>
     </div>
 </div>

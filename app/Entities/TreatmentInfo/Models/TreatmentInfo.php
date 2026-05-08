@@ -17,6 +17,7 @@ class TreatmentInfo extends Model
         'global_price',
         'remaining_amount',
         'status',
+        'cancelled_at',
     ];
 
     protected function casts(): array

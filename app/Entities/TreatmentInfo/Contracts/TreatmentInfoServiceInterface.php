@@ -7,6 +7,8 @@ use App\Entities\TreatmentInfo\Models\SessionCorrection;
 use App\Entities\TreatmentInfo\Models\TreatmentCorrection;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 
 interface TreatmentInfoServiceInterface
 {
@@ -42,4 +44,9 @@ interface TreatmentInfoServiceInterface
     public function listCorrectionsForSession(int $sessionId): Collection;
 
     public function createSessionCorrection(int $sessionId, array $data, ?int $createdBy = null): SessionCorrection;
+
+    /**
+     * @return SupportCollection<int, array{patient_name: string, treatment_description: string, refund_amount: float, treatment_id: int, patient_id: int}>
+     */
+    public function listCancellationsForDate(Carbon $date): SupportCollection;
 }

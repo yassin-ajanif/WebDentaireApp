@@ -12,6 +12,8 @@ use App\Entities\TreatmentInfo\Models\TreatmentCorrection;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 
 class TreatmentInfoService implements TreatmentInfoServiceInterface
@@ -97,7 +99,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
 
     public function cancelTreatment(int $id): void
     {
-        TreatmentInfo::query()->whereKey($id)->update(['status' => TreatmentStatus::Cancelled]);
+        TreatmentInfo::query()->whereKey($id)->update([
+            'status' => TreatmentStatus::Cancelled,
+            'cancelled_at' => now(),
+        ]);
     }
 
     public function createSession(int $treatmentId, array $data): Session
@@ -352,5 +357,22 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
         if (bccomp($value, '0.00', 2) === -1) {
             throw new DomainException($message);
         }
+    }
+
+    public function listCancellationsForDate(Carbon $date): SupportCollection
+    {
+        return TreatmentInfo::query()
+            ->with(['sessions' => fn ($q) => $q->where('status', '!=', 'cancelled'), 'patient'])
+            ->whereDate('cancelled_at', $date->toDateString())
+            ->get()
+            ->map(fn (TreatmentInfo $treatment) => [
+                'patient_name' => $treatment->patient?->displayName() ?? __('Deleted patient'),
+                'treatment_description' => $treatment->description,
+                'refund_amount' => (float) $treatment->sessions->sum(fn ($s) => (float) $s->received_payment),
+                'treatment_id' => $treatment->id,
+                'patient_id' => $treatment->patient_id,
+            ])
+            ->filter(fn (array $row) => $row['refund_amount'] > 0)
+            ->values();
     }
 }
