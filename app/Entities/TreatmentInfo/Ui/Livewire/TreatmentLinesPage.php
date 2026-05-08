@@ -310,8 +310,9 @@ class TreatmentLinesPage extends Component
     {
         $patientModel = $this->patients()->find($this->patient);
         $treatments = $this->treatments()->listForPatient($this->patient);
-        $totalRemaining = $treatments->sum(fn (TreatmentInfo $treatment): float => (float) $treatment->remaining_amount);
-        $totalGlobal = $treatments->sum(fn (TreatmentInfo $treatment): float => (float) $treatment->global_price);
+        $activeTreatments = $treatments->filter(fn (TreatmentInfo $t) => $t->status !== TreatmentStatus::Cancelled);
+        $totalRemaining = $activeTreatments->sum(fn (TreatmentInfo $treatment): float => (float) $treatment->remaining_amount);
+        $totalGlobal = $activeTreatments->sum(fn (TreatmentInfo $treatment): float => (float) $treatment->global_price);
         $totalPaid = max(0, $totalGlobal - $totalRemaining);
 
         return view('treatment_info::treatment-lines-page', [

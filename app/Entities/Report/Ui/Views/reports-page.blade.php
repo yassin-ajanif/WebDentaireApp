@@ -192,4 +192,90 @@
             </tbody>
         </table>
     </div>
+
+    <div class="app-card mt-8 overflow-x-auto shadow-sm" style="border-color: color-mix(in srgb, #dc2626 45%, white);">
+        <div class="app-divider border-b px-4 py-3" style="background-color: color-mix(in srgb, #dc2626 8%, white);">
+            <h2 class="app-title text-base font-semibold" style="color: #991b1b;">{{ __('Cancelled Treatments') }}</h2>
+        </div>
+        <table class="app-divider min-w-full divide-y text-left text-sm">
+            <thead class="text-xs font-semibold uppercase tracking-wide app-text-gray">
+                <tr>
+                    <th class="px-4 py-3">{{ __('Date cancelled') }}</th>
+                    <th class="px-4 py-3">{{ __('Patient') }}</th>
+                    <th class="px-4 py-3">{{ __('Treatment') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Global price (DH)') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Refund (DH)') }}</th>
+                </tr>
+            </thead>
+            <tbody class="app-divider divide-y">
+                @forelse ($cancelledTreatments as $row)
+                    <tr class="hover:bg-[color:color-mix(in_srgb,#dc2626_8%,white)]">
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['cancelled_label'] }}</td>
+                        <td class="px-4 py-2.5">
+                            <a href="{{ route('treatments.index', ['patient' => $row['patient_id'], 'treatment' => $row['id']]) }}" class="app-title hover:underline">
+                                {{ $row['patient_name'] }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['description'] }}</td>
+                        <td class="px-4 py-2.5 text-right app-text-gray">{{ $row['global_price'] }}</td>
+                        <td class="px-4 py-2.5 text-right font-semibold" style="color: #dc2626;">-{{ $row['refund_amount'] }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="app-text-muted px-4 py-6 text-center">{{ __('No cancelled treatments in this period.') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            <tfoot class="border-t app-divider">
+                <tr class="font-semibold">
+                    <td colspan="4" class="px-4 py-3 text-right app-title">{{ __('Total refunds:') }}</td>
+                    <td class="px-4 py-3 text-right" style="color: #dc2626;">-{{ $totalCancelledTreatments }} DH</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="app-card mt-8 overflow-x-auto shadow-sm" style="border-color: color-mix(in srgb, #dc2626 45%, white);">
+        <div class="app-divider border-b px-4 py-3" style="background-color: color-mix(in srgb, #dc2626 8%, white);">
+            <h2 class="app-title text-base font-semibold" style="color: #991b1b;">{{ __('Cancelled Sessions') }}</h2>
+        </div>
+        <table class="app-divider min-w-full divide-y text-left text-sm">
+            <thead class="text-xs font-semibold uppercase tracking-wide app-text-gray">
+                <tr>
+                    <th class="px-4 py-3">{{ __('Date cancelled') }}</th>
+                    <th class="px-4 py-3">{{ __('Patient') }}</th>
+                    <th class="px-4 py-3">{{ __('Treatment') }}</th>
+                    <th class="px-4 py-3">{{ __('Session date') }}</th>
+                    <th class="px-4 py-3">{{ __('Notes') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Refund (DH)') }}</th>
+                </tr>
+            </thead>
+            <tbody class="app-divider divide-y">
+                @forelse ($cancelledSessions as $row)
+                    <tr class="hover:bg-[color:color-mix(in_srgb,#dc2626_8%,white)]">
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['cancelled_label'] }}</td>
+                        <td class="px-4 py-2.5">
+                            <a href="{{ route('treatments.index', ['patient' => $row['patient_id'], 'treatment' => $row['treatment_info_id']]) }}" class="app-title hover:underline">
+                                {{ $row['patient_name'] }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['treatment_description'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['session_label'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['notes'] }}</td>
+                        <td class="px-4 py-2.5 text-right font-semibold" style="color: #dc2626;">-{{ $row['received_payment'] }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="app-text-muted px-4 py-6 text-center">{{ __('No cancelled sessions in this period.') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            <tfoot class="border-t app-divider">
+                <tr class="font-semibold">
+                    <td colspan="5" class="px-4 py-3 text-right app-title">{{ __('Total refunds:') }}</td>
+                    <td class="px-4 py-3 text-right" style="color: #dc2626;">-{{ $totalCancelledSessions }} DH</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 </div>

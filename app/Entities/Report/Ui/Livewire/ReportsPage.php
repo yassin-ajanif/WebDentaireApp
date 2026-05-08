@@ -120,6 +120,23 @@ class ReportsPage extends Component
                 ];
             });
 
+        $cancelledTreatments = $this->reports()->cancelledTreatmentsByPeriod($from, $toEnd)
+            ->map(function (array $row): array {
+                return [
+                    ...$row,
+                    'global_price' => number_format($row['global_price'], 2, '.', ''),
+                    'refund_amount' => number_format($row['refund_amount'], 2, '.', ''),
+                ];
+            });
+
+        $cancelledSessions = $this->reports()->cancelledSessionsByPeriod($from, $toEnd)
+            ->map(function (array $row): array {
+                return [
+                    ...$row,
+                    'received_payment' => number_format($row['received_payment'], 2, '.', ''),
+                ];
+            });
+
         return view('report::reports-page', [
             'activePreset' => $this->activePreset(),
             'rangeLabel' => $rangeLabel,
@@ -129,6 +146,10 @@ class ReportsPage extends Component
             'totalCredits' => number_format($credits->sum(fn (array $row) => (float) $row['credit']), 2, '.', ''),
             'corrections' => $corrections,
             'sessionCorrections' => $sessionCorrections,
+            'cancelledTreatments' => $cancelledTreatments,
+            'totalCancelledTreatments' => number_format($cancelledTreatments->sum(fn (array $row) => (float) $row['refund_amount']), 2, '.', ''),
+            'cancelledSessions' => $cancelledSessions,
+            'totalCancelledSessions' => number_format($cancelledSessions->sum(fn (array $row) => (float) $row['received_payment']), 2, '.', ''),
         ])->title(__('Reports'));
     }
 }

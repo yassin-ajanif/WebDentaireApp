@@ -156,4 +156,87 @@ class ReportService implements ReportServiceInterface
                 ];
             });
     }
+
+    public function cancelledTreatmentsByPeriod(Carbon $from, Carbon $to): Collection
+    {
+        return DB::table('treatment_infos as ti')
+            ->join('patients as p', 'p.id', '=', 'ti.patient_id')
+            ->leftJoin('treatment_sessions as ts', function ($join): void {
+                $join->on('ts.treatment_info_id', '=', 'ti.id')
+                    ->where('ts.status', '!=', 'cancelled');
+            })
+            ->selectRaw('
+                ti.id,
+                ti.description,
+                ti.global_price,
+                ti.cancelled_at,
+                p.id as patient_id,
+                p.first_name,
+                p.last_name,
+                COALESCE(SUM(ts.received_payment), 0) as refund_amount
+            ')
+            ->where('ti.status', 'cancelled')
+            ->whereBetween('ti.cancelled_at', [
+                $from->copy()->startOfDay(),
+                $to->copy()->endOfDay(),
+            ])
+            ->groupBy('ti.id', 'ti.description', 'ti.global_price', 'ti.cancelled_at', 'p.id', 'p.first_name', 'p.last_name')
+            ->orderByDesc('ti.cancelled_at')
+            ->get()
+            ->map(function ($row): array {
+                $cancelledAt = Carbon::parse($row->cancelled_at);
+
+                return [
+                    'id' => (int) $row->id,
+                    'patient_id' => (int) $row->patient_id,
+                    'patient_name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')) ?: '—',
+                    'description' => (string) ($row->description ?? '—'),
+                    'global_price' => (float) $row->global_price,
+                    'refund_amount' => (float) $row->refund_amount,
+                    'cancelled_label' => $cancelledAt->format('d/m/Y H:i'),
+                ];
+            });
+    }
+
+    public function cancelledSessionsByPeriod(Carbon $from, Carbon $to): Collection
+    {
+        return DB::table('treatment_sessions as ts')
+            ->join('treatment_infos as ti', 'ti.id', '=', 'ts.treatment_info_id')
+            ->join('patients as p', 'p.id', '=', 'ti.patient_id')
+            ->selectRaw('
+                ts.id,
+                ts.session_date,
+                ts.received_payment,
+                ts.cancelled_at,
+                ts.notes,
+                ti.id as treatment_info_id,
+                ti.description as treatment_description,
+                p.id as patient_id,
+                p.first_name,
+                p.last_name
+            ')
+            ->where('ts.status', 'cancelled')
+            ->whereBetween('ts.cancelled_at', [
+                $from->copy()->startOfDay(),
+                $to->copy()->endOfDay(),
+            ])
+            ->orderByDesc('ts.cancelled_at')
+            ->get()
+            ->map(function ($row): array {
+                $cancelledAt = Carbon::parse($row->cancelled_at);
+                $sessionDate = Carbon::parse($row->session_date);
+
+                return [
+                    'id' => (int) $row->id,
+                    'patient_id' => (int) $row->patient_id,
+                    'treatment_info_id' => (int) $row->treatment_info_id,
+                    'patient_name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')) ?: '—',
+                    'treatment_description' => (string) ($row->treatment_description ?? '—'),
+                    'session_label' => $sessionDate->format('d/m/Y H:i'),
+                    'received_payment' => (float) $row->received_payment,
+                    'notes' => (string) ($row->notes ?? '—'),
+                    'cancelled_label' => $cancelledAt->format('d/m/Y H:i'),
+                ];
+            });
+    }
 }
