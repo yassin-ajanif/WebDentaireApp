@@ -54,6 +54,7 @@ class AppointmentTimelinePage extends Component
                     'id' => $appointment->id,
                     'off' => $appointment->queueDisplayName(),
                     'patient_id' => $appointment->patient_id,
+                    'treatment_info_id' => $appointment->treatment_info_id ? (int) $appointment->treatment_info_id : null,
                     'started_at_raw' => $startedAt,
                     'completed_at_raw' => $completedAt,
                     'started_at' => $startedAt->format('H:i'),

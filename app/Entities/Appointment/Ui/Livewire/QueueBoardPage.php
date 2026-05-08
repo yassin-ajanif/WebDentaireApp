@@ -145,6 +145,21 @@ class QueueBoardPage extends Component
         }
 
         try {
+            $current = $this->appointments()->find($id);
+            if (
+                $status === AppointmentStatus::Done
+                && $current !== null
+                && $current->status === AppointmentStatus::InProgress
+                && $current->patient_id !== null
+            ) {
+                $this->redirect(route('treatments.index', [
+                    'patient' => $current->patient_id,
+                    'appointment' => $current->id,
+                ]));
+
+                return;
+            }
+
             $this->appointments()->transitionStatus($id, $status);
             session()->flash('status', match ($status) {
                 AppointmentStatus::Waiting => __('Remis en attente.'),

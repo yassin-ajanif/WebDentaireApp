@@ -102,6 +102,24 @@ class ReportsPage extends Component
                 ];
             });
 
+        $corrections = $this->reports()->treatmentCorrectionsByPeriod($from, $toEnd)
+            ->map(function (array $row): array {
+                return [
+                    ...$row,
+                    'old_global_price' => number_format($row['old_global_price'], 2, '.', ''),
+                    'new_global_price' => number_format($row['new_global_price'], 2, '.', ''),
+                ];
+            });
+
+        $sessionCorrections = $this->reports()->sessionCorrectionsByPeriod($from, $toEnd)
+            ->map(function (array $row): array {
+                return [
+                    ...$row,
+                    'old_received_payment' => number_format($row['old_received_payment'], 2, '.', ''),
+                    'new_received_payment' => number_format($row['new_received_payment'], 2, '.', ''),
+                ];
+            });
+
         return view('report::reports-page', [
             'activePreset' => $this->activePreset(),
             'rangeLabel' => $rangeLabel,
@@ -109,6 +127,8 @@ class ReportsPage extends Component
             'totalRevenue' => number_format($revenueRows->sum(fn (array $row) => (float) $row['received_total']), 2, '.', ''),
             'credits' => $credits,
             'totalCredits' => number_format($credits->sum(fn (array $row) => (float) $row['credit']), 2, '.', ''),
+            'corrections' => $corrections,
+            'sessionCorrections' => $sessionCorrections,
         ])->title(__('Reports'));
     }
 }

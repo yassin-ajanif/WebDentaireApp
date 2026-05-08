@@ -35,4 +35,9 @@ class TreatmentInfo extends Model
     {
         return $this->hasMany(Session::class)->orderByDesc('session_date')->orderByDesc('id');
     }
+
+    public function corrections(): HasMany
+    {
+        return $this->hasMany(TreatmentCorrection::class)->orderByDesc('created_at')->orderByDesc('id');
+    }
 }

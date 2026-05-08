@@ -8,6 +8,17 @@
         ])->values();
         $cancelled = $items->where('status', \App\Entities\Appointment\Enums\AppointmentStatus::Cancelled)->values();
         $avgDuration = max(1, (int) (($estimateMinutes ?? 0) / max(1, $waiting->count())));
+        $firstStartedAt = optional($waiting->whereNotNull('started_at')->sortBy('started_at')->first())->started_at;
+        $slotsById = [];
+        if ($firstStartedAt !== null) {
+            foreach ($waiting->values() as $index => $slotAppointment) {
+                $slotStart = $firstStartedAt->copy()->addMinutes($index * $avgDuration);
+                $slotsById[$slotAppointment->id] = [
+                    'from' => $slotStart,
+                    'to' => $slotStart->copy()->addMinutes($avgDuration),
+                ];
+            }
+        }
     @endphp
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -99,10 +110,14 @@
             <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 @forelse($waiting as $appt)
                     @php
-                        $from = $appt->started_at ?? $appt->created_at;
-                        $to = $from?->copy()->addMinutes($avgDuration);
+                        $slot = $slotsById[$appt->id] ?? null;
+                        $from = $slot['from'] ?? null;
+                        $to = $slot['to'] ?? null;
                         $statusLabel = $appt->status === \App\Entities\Appointment\Enums\AppointmentStatus::InProgress ? __('En cours') : __('En attente');
                         $isInProgress = $appt->status === \App\Entities\Appointment\Enums\AppointmentStatus::InProgress;
+                        $timeLabel = $from !== null && $to !== null
+                            ? $from->format('H:i').' - '.$to->format('H:i')
+                            : '────────';
                     @endphp
                     @if($isInProgress)
                         <div wire:key="active-{{ $appt->id }}"
@@ -114,7 +129,7 @@
                                     <div class="app-queue-card-en-cours-badge">{{ $statusLabel }}</div>
                                     <div class="app-queue-card-en-cours-name" title="{{ $appt->queueDisplayName() }}">{{ $appt->queueDisplayName() }}</div>
                                 </div>
-                                <div class="app-queue-card-en-cours-time">{{ $from?->format('H:i') }} - {{ $to?->format('H:i') }}</div>
+                                <div class="app-queue-card-en-cours-time">{{ $timeLabel }}</div>
                             </div>
                             @include('appointment::queue-inline-actions', ['appointment' => $appt, 'variant' => 'dark'])
                         </div>
@@ -128,7 +143,7 @@
                             </div>
                             <div class="flex min-w-0 items-center justify-between gap-3">
                                 <div class="app-title min-w-0 flex-1 truncate text-xl font-semibold tracking-tight sm:text-2xl" title="{{ $appt->queueDisplayName() }}">{{ $appt->queueDisplayName() }}</div>
-                                <div class="app-subtitle shrink-0 text-sm">{{ $from?->format('H:i') }} - {{ $to?->format('H:i') }}</div>
+                                <div class="app-subtitle shrink-0 text-sm">{{ $timeLabel }}</div>
                             </div>
                             @include('appointment::queue-inline-actions', ['appointment' => $appt, 'variant' => 'light'])
                         </div>

@@ -106,4 +106,90 @@
             </tbody>
         </table>
     </div>
+
+    <div class="app-card mt-6 overflow-x-auto shadow-sm">
+        <div class="app-divider border-b px-4 py-3">
+            <h2 class="app-title text-base font-semibold">{{ __('Treatment correction history') }}</h2>
+        </div>
+        <table class="app-divider min-w-full divide-y text-left text-sm">
+            <thead class="text-xs font-semibold uppercase tracking-wide app-text-gray">
+                <tr>
+                    <th class="px-4 py-3">{{ __('Date') }}</th>
+                    <th class="px-4 py-3">{{ __('Patient') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Old price') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('New price') }}</th>
+                    <th class="px-4 py-3">{{ __('Old description') }}</th>
+                    <th class="px-4 py-3">{{ __('New description') }}</th>
+                    <th class="px-4 py-3">{{ __('Reason') }}</th>
+                </tr>
+            </thead>
+            <tbody class="app-divider divide-y">
+                @forelse ($corrections as $row)
+                    <tr class="hover:bg-white/40">
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['created_label'] }}</td>
+                        <td class="px-4 py-2.5">
+                            <a href="{{ route('treatments.index', ['patient' => $row['patient_id'], 'treatment' => $row['treatment_info_id']]) }}" class="app-title hover:underline">
+                                {{ $row['patient_name'] }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-2.5 text-right app-text-gray">{{ $row['old_global_price'] }}</td>
+                        <td class="px-4 py-2.5 text-right app-title">{{ $row['new_global_price'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['old_description'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['new_description'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['reason'] }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="app-text-muted px-4 py-6 text-center">{{ __('No correction history yet.') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="app-card mt-6 overflow-x-auto shadow-sm">
+        <div class="app-divider border-b px-4 py-3">
+            <h2 class="app-title text-base font-semibold">{{ __('Session correction history') }}</h2>
+        </div>
+        <table class="app-divider min-w-full divide-y text-left text-sm">
+            <thead class="text-xs font-semibold uppercase tracking-wide app-text-gray">
+                <tr>
+                    <th class="px-4 py-3">{{ __('Date') }}</th>
+                    <th class="px-4 py-3">{{ __('Patient') }}</th>
+                    <th class="px-4 py-3">{{ __('Treatment') }}</th>
+                    <th class="px-4 py-3">{{ __('Session') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Old received') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('New received') }}</th>
+                    <th class="px-4 py-3">{{ __('Old note') }}</th>
+                    <th class="px-4 py-3">{{ __('New note') }}</th>
+                    <th class="px-4 py-3">{{ __('Reason') }}</th>
+                    <th class="px-4 py-3">{{ __('Modified by') }}</th>
+                </tr>
+            </thead>
+            <tbody class="app-divider divide-y">
+                @forelse ($sessionCorrections as $row)
+                    <tr class="hover:bg-white/40">
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['created_label'] }}</td>
+                        <td class="px-4 py-2.5">
+                            <a href="{{ route('treatments.index', ['patient' => $row['patient_id'], 'treatment' => $row['treatment_info_id']]) }}" class="app-title hover:underline">
+                                {{ $row['patient_name'] }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['treatment_description'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['session_label'] }}</td>
+                        <td class="px-4 py-2.5 text-right app-text-gray">{{ $row['old_received_payment'] }}</td>
+                        <td class="px-4 py-2.5 text-right app-title">{{ $row['new_received_payment'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['old_notes'] ?: '—' }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['new_notes'] ?: '—' }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['reason'] }}</td>
+                        <td class="px-4 py-2.5 app-text-gray">{{ $row['edited_by'] }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="10" class="app-text-muted px-4 py-6 text-center">{{ __('No session correction history yet.') }}</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>

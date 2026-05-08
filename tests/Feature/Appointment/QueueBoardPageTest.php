@@ -99,4 +99,30 @@ class QueueBoardPageTest extends TestCase
             ->assertSee('Aujourd')
             ->assertDontSee('Hier');
     }
+
+    public function test_terminer_from_started_patient_redirects_to_treatments_page(): void
+    {
+        $patient = Patient::query()->create([
+            'first_name' => 'Nadia',
+            'last_name' => 'Karim',
+            'telephone' => '0611888000',
+            'notes' => null,
+        ]);
+
+        $appointment = Appointment::query()->create([
+            'patient_id' => $patient->id,
+            'status' => AppointmentStatus::InProgress,
+            'started_at' => now()->subMinutes(10),
+            'completed_at' => null,
+        ]);
+
+        Livewire::test(QueueBoardPage::class)
+            ->call('setAppointmentStatus', $appointment->id, AppointmentStatus::Done->value)
+            ->assertRedirect(route('treatments.index', [
+                'patient' => $patient->id,
+                'appointment' => $appointment->id,
+            ]));
+
+        $this->assertSame(AppointmentStatus::InProgress, $appointment->fresh()->status);
+    }
 }

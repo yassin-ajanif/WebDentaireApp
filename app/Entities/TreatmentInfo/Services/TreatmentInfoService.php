@@ -5,6 +5,8 @@ namespace App\Entities\TreatmentInfo\Services;
 use App\Entities\Appointment\Contracts\PatientLookupInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
 use App\Entities\TreatmentInfo\Models\Session;
+use App\Entities\TreatmentInfo\Models\SessionCorrection;
+use App\Entities\TreatmentInfo\Models\TreatmentCorrection;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,7 +25,7 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
         }
 
         return TreatmentInfo::query()
-            ->with(['sessions'])
+            ->with(['sessions.corrections', 'corrections'])
             ->where('patient_id', $patientId)
             ->orderByDesc('id')
             ->get();
@@ -136,10 +138,17 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 throw new DomainException(__('Received payment exceeds remaining amount.'));
             }
 
+            $this->createSessionCorrection($session->id, [
+                'session_date' => $session->session_date,
+                'received_payment' => $newPayment,
+                'notes' => array_key_exists('notes', $data) ? $data['notes'] : $session->notes,
+                'reason' => $data['reason'] ?? '',
+            ], (isset($data['created_by']) && is_numeric($data['created_by'])) ? (int) $data['created_by'] : null);
+
             $session->update([
                 'session_date' => $data['session_date'] ?? $session->session_date,
                 'received_payment' => $newPayment,
-                'notes' => $data['notes'] ?? $session->notes,
+                'notes' => array_key_exists('notes', $data) ? $data['notes'] : $session->notes,
             ]);
 
             $this->syncRemainingAmount($treatment);
@@ -162,6 +171,103 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
 
             $session->delete();
             $this->syncRemainingAmount($treatment);
+        });
+    }
+
+    public function listCorrectionsForTreatment(int $treatmentId): Collection
+    {
+        return TreatmentCorrection::query()
+            ->where('treatment_info_id', $treatmentId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    public function createCorrection(int $treatmentId, array $data, ?int $createdBy = null): TreatmentCorrection
+    {
+        return DB::transaction(function () use ($treatmentId, $data, $createdBy) {
+            /** @var TreatmentInfo $treatment */
+            $treatment = TreatmentInfo::query()
+                ->lockForUpdate()
+                ->with('sessions')
+                ->findOrFail($treatmentId);
+
+            $newGlobalPrice = $this->normalizeMoney($data['global_price'] ?? $treatment->global_price);
+            $this->assertNonNegative($newGlobalPrice, __('Global price must be zero or greater.'));
+
+            $newDescription = trim((string) ($data['description'] ?? $treatment->description));
+            if ($newDescription === '') {
+                throw new DomainException(__('Treatment type / description is required.'));
+            }
+
+            $reason = trim((string) ($data['reason'] ?? ''));
+            if ($reason === '') {
+                throw new DomainException(__('Correction reason is required.'));
+            }
+
+            $paid = $this->sumSessionPayments($treatment);
+            if (bccomp($paid, $newGlobalPrice, 2) === 1) {
+                throw new DomainException(__('Global price cannot be less than total paid.'));
+            }
+
+            $correction = TreatmentCorrection::query()->create([
+                'treatment_info_id' => $treatment->id,
+                'old_global_price' => (string) $treatment->global_price,
+                'new_global_price' => $newGlobalPrice,
+                'old_description' => (string) $treatment->description,
+                'new_description' => $newDescription,
+                'reason' => $reason,
+                'created_by' => $createdBy,
+                'created_at' => now(),
+            ]);
+
+            $remaining = bcsub($newGlobalPrice, $paid, 2);
+            $treatment->update([
+                'description' => $newDescription,
+                'global_price' => $newGlobalPrice,
+                'remaining_amount' => $remaining,
+            ]);
+
+            return $correction->fresh();
+        });
+    }
+
+    public function listCorrectionsForSession(int $sessionId): Collection
+    {
+        return SessionCorrection::query()
+            ->where('treatment_session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    public function createSessionCorrection(int $sessionId, array $data, ?int $createdBy = null): SessionCorrection
+    {
+        return DB::transaction(function () use ($sessionId, $data, $createdBy) {
+            /** @var Session $session */
+            $session = Session::query()->findOrFail($sessionId);
+
+            $newPayment = $this->normalizeMoney($data['received_payment'] ?? $session->received_payment);
+            $this->assertNonNegative($newPayment, __('Received payment must be zero or greater.'));
+
+            $reason = trim((string) ($data['reason'] ?? ''));
+            if ($reason === '') {
+                throw new DomainException(__('Session correction reason is required.'));
+            }
+
+            return SessionCorrection::query()->create([
+                'treatment_session_id' => $session->id,
+                'treatment_info_id' => $session->treatment_info_id,
+                'old_session_date' => $session->session_date,
+                'new_session_date' => $data['session_date'] ?? $session->session_date,
+                'old_received_payment' => (string) $session->received_payment,
+                'new_received_payment' => $newPayment,
+                'old_notes' => $session->notes,
+                'new_notes' => array_key_exists('notes', $data) ? $data['notes'] : $session->notes,
+                'reason' => $reason,
+                'created_by' => $createdBy,
+                'created_at' => now(),
+            ])->fresh();
         });
     }
 

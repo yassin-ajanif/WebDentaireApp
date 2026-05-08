@@ -48,7 +48,7 @@
         <div class="px-2 py-0">
             @forelse($rows as $row)
                 @if($row['patient_id'])
-                    <a href="{{ route('treatments.index', ['patient' => $row['patient_id']]) }}"
+                    <a href="{{ route('treatments.index', ['patient' => $row['patient_id'], 'treatment' => $row['treatment_info_id'], 'highlight_date' => $selectedDate]) }}"
                         class="grid border-b px-1 py-0.5 leading-tight transition-colors hover:rounded hover:bg-[color:color-mix(in_srgb,var(--color-raw-primary-blue)_12%,white)]"
                         style="grid-template-columns: 1.2fr 1fr 0.8fr; border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);"
                         title="{{ __('Voir les traitements') }}">

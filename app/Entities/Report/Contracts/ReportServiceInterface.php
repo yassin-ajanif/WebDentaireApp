@@ -10,4 +10,8 @@ interface ReportServiceInterface
     public function revenueByPeriod(Carbon $from, Carbon $to): Collection;
 
     public function patientCredits(): Collection;
+
+    public function treatmentCorrectionsByPeriod(Carbon $from, Carbon $to): Collection;
+
+    public function sessionCorrectionsByPeriod(Carbon $from, Carbon $to): Collection;
 }

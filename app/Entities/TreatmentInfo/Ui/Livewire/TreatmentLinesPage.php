@@ -2,11 +2,14 @@
 
 namespace App\Entities\TreatmentInfo\Ui\Livewire;
 
+use App\Entities\Appointment\Contracts\AppointmentServiceInterface;
+use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Patient\Contracts\PatientServiceInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
 use App\Entities\TreatmentInfo\Models\Session;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use DomainException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -16,11 +19,15 @@ class TreatmentLinesPage extends Component
 {
     public int $patient = 0;
 
+    public ?int $activeAppointmentId = null;
+
     public bool $showTreatmentForm = false;
 
     public string $treatmentDescription = '';
 
     public string $globalPrice = '0.00';
+
+    public string $correctionReason = '';
 
     public ?int $editingTreatmentId = null;
 
@@ -30,16 +37,58 @@ class TreatmentLinesPage extends Component
 
     public ?int $activeSessionFormTreatmentId = null;
 
+    public string $sessionCorrectionReason = '';
+
+    public ?string $highlightSessionDate = null;
+
     /**
      * @var array<int, array{session_date:string, received_payment:string, notes:string}>
      */
     public array $sessionForms = [];
+
+    /** @var array<int, bool> */
+    public array $expandedTreatments = [];
+
+    /** @var array<int, bool> */
+    public array $expandedHistorySections = [];
 
     public function mount(int $patient): void
     {
         $this->patient = $patient;
         if ($this->patients()->find($patient) === null) {
             abort(404);
+        }
+
+        $appointmentId = (int) request()->query('appointment', 0);
+        if ($appointmentId > 0) {
+            $appointment = $this->appointments()->find($appointmentId);
+            if (
+                $appointment !== null
+                && $appointment->patient_id === $this->patient
+                && $appointment->status === AppointmentStatus::InProgress
+            ) {
+                $this->activeAppointmentId = $appointmentId;
+            }
+        }
+
+        $selectedTreatmentId = (int) request()->query('treatment', 0);
+        if ($selectedTreatmentId > 0) {
+            $selectedTreatment = $this->treatments()
+                ->listForPatient($this->patient)
+                ->firstWhere('id', $selectedTreatmentId);
+
+            if ($selectedTreatment instanceof TreatmentInfo) {
+                $this->expandedTreatments[$selectedTreatmentId] = true;
+            }
+        }
+
+        $highlightDate = (string) request()->query('highlight_date', '');
+        if ($highlightDate !== '') {
+            try {
+                $this->highlightSessionDate = Carbon::parse($highlightDate)->toDateString();
+            } catch (\Throwable) {
+                $this->highlightSessionDate = null;
+            }
         }
     }
 
@@ -54,6 +103,7 @@ class TreatmentLinesPage extends Component
         $this->editingTreatmentId = $id;
         $this->treatmentDescription = (string) $treatment->description;
         $this->globalPrice = (string) $treatment->global_price;
+        $this->correctionReason = '';
     }
 
     public function openTreatmentForm(): void
@@ -65,7 +115,7 @@ class TreatmentLinesPage extends Component
     {
         $this->editingTreatmentId = null;
         $this->showTreatmentForm = false;
-        $this->reset(['treatmentDescription', 'globalPrice']);
+        $this->reset(['treatmentDescription', 'globalPrice', 'correctionReason']);
         $this->globalPrice = '0.00';
     }
 
@@ -74,6 +124,7 @@ class TreatmentLinesPage extends Component
         $this->validate([
             'treatmentDescription' => ['required', 'string', 'max:500'],
             'globalPrice' => ['required', 'numeric', 'min:0'],
+            'correctionReason' => $this->editingTreatmentId === null ? ['nullable', 'string', 'max:2000'] : ['required', 'string', 'max:2000'],
         ]);
 
         try {
@@ -84,11 +135,12 @@ class TreatmentLinesPage extends Component
                 ]);
                 session()->flash('status', __('Treatment added.'));
             } else {
-                $this->treatments()->updateTreatment($this->editingTreatmentId, [
+                $this->treatments()->createCorrection($this->editingTreatmentId, [
                     'description' => $this->treatmentDescription,
                     'global_price' => $this->globalPrice,
-                ]);
-                session()->flash('status', __('Treatment updated.'));
+                    'reason' => $this->correctionReason,
+                ], auth()->id());
+                session()->flash('status', __('Treatment correction saved.'));
             }
         } catch (DomainException $e) {
             session()->flash('error', $e->getMessage());
@@ -112,6 +164,7 @@ class TreatmentLinesPage extends Component
             return;
         }
 
+        $this->expandedTreatments[$treatmentId] = true;
         $this->activeSessionFormTreatmentId = $treatmentId;
         $this->editingSessionId = $sessionId;
         $this->editingSessionTreatmentId = $treatmentId;
@@ -120,10 +173,12 @@ class TreatmentLinesPage extends Component
             'received_payment' => (string) $session->received_payment,
             'notes' => (string) ($session->notes ?? ''),
         ];
+        $this->sessionCorrectionReason = '';
     }
 
     public function openSessionForm(int $treatmentId): void
     {
+        $this->expandedTreatments[$treatmentId] = true;
         $this->activeSessionFormTreatmentId = $treatmentId;
         $this->sessionForms[$treatmentId] ??= [
             'session_date' => now()->format('Y-m-d\TH:i'),
@@ -132,10 +187,28 @@ class TreatmentLinesPage extends Component
         ];
     }
 
+    public function toggleTreatmentExpanded(int $treatmentId): void
+    {
+        $current = $this->expandedTreatments[$treatmentId] ?? false;
+        $next = ! $current;
+        $this->expandedTreatments[$treatmentId] = $next;
+
+        if (! $next && $this->activeSessionFormTreatmentId === $treatmentId) {
+            $this->cancelSessionEdit($treatmentId);
+        }
+    }
+
+    public function toggleHistorySection(int $treatmentId): void
+    {
+        $current = $this->expandedHistorySections[$treatmentId] ?? true;
+        $this->expandedHistorySections[$treatmentId] = ! $current;
+    }
+
     public function cancelSessionEdit(int $treatmentId): void
     {
         $this->editingSessionId = null;
         $this->editingSessionTreatmentId = null;
+        $this->sessionCorrectionReason = '';
         if ($this->activeSessionFormTreatmentId === $treatmentId) {
             $this->activeSessionFormTreatmentId = null;
         }
@@ -151,9 +224,19 @@ class TreatmentLinesPage extends Component
             'notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
 
+        if ($this->editingSessionId !== null && $this->editingSessionTreatmentId === $treatmentId) {
+            $this->validate([
+                'sessionCorrectionReason' => ['required', 'string', 'max:2000'],
+            ]);
+        }
+
         try {
             if ($this->editingSessionId !== null && $this->editingSessionTreatmentId === $treatmentId) {
-                $this->treatments()->updateSession($this->editingSessionId, $validated);
+                $this->treatments()->updateSession($this->editingSessionId, [
+                    ...$validated,
+                    'reason' => $this->sessionCorrectionReason,
+                    'created_by' => auth()->id(),
+                ]);
                 session()->flash('status', __('Session payment updated.'));
             } else {
                 $this->treatments()->createSession($treatmentId, $validated);
@@ -166,6 +249,43 @@ class TreatmentLinesPage extends Component
         }
 
         $this->cancelSessionEdit($treatmentId);
+
+        if ($this->activeAppointmentId !== null) {
+            $this->finishAppointment();
+
+            return;
+        }
+    }
+
+    public function finishAppointment(): void
+    {
+        if ($this->activeAppointmentId === null) {
+            return;
+        }
+
+        $appointment = $this->appointments()->find($this->activeAppointmentId);
+        if (
+            $appointment === null
+            || $appointment->patient_id !== $this->patient
+            || $appointment->status !== AppointmentStatus::InProgress
+        ) {
+            session()->flash('error', __('Appointment cannot be completed from this page.'));
+            $this->activeAppointmentId = null;
+
+            return;
+        }
+
+        try {
+            $this->appointments()->transitionStatus($appointment->id, AppointmentStatus::Done);
+            session()->flash('status', __('Session terminée.'));
+            $this->activeAppointmentId = null;
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
+
+        $this->redirect(route('queue.index'));
     }
 
     public function deleteSession(int $sessionId): void
@@ -188,6 +308,8 @@ class TreatmentLinesPage extends Component
             'treatmentsCount' => $treatments->count(),
             'totalPaidAmount' => number_format($totalPaid, 2, '.', ''),
             'totalRemainingAmount' => number_format($totalRemaining, 2, '.', ''),
+            'showFinishAppointmentButton' => $this->activeAppointmentId !== null,
+            'highlightSessionDate' => $this->highlightSessionDate,
         ])->title(__('Treatments'));
     }
 
@@ -211,5 +333,10 @@ class TreatmentLinesPage extends Component
     private function patients(): PatientServiceInterface
     {
         return app(PatientServiceInterface::class);
+    }
+
+    private function appointments(): AppointmentServiceInterface
+    {
+        return app(AppointmentServiceInterface::class);
     }
 }
