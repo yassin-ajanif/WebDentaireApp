@@ -16,6 +16,7 @@ class TreatmentInfo extends Model
         'description',
         'global_price',
         'remaining_amount',
+        'status',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class TreatmentInfo extends Model
         return [
             'global_price' => 'decimal:2',
             'remaining_amount' => 'decimal:2',
+            'status' => \App\Entities\TreatmentInfo\Enums\TreatmentStatus::class,
         ];
     }
 

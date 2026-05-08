@@ -40,7 +40,7 @@ class ReportService implements ReportServiceInterface
                 SUM(ti.global_price) as total_plan,
                 SUM(ti.remaining_amount) as total_credit
             ')
-            ->where('ti.remaining_amount', '>', 0)
+            ->where('ti.status', \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Unpaid->value)
             ->groupBy('p.id', 'p.first_name', 'p.last_name', 'p.telephone')
             ->orderByDesc('total_credit')
             ->get()

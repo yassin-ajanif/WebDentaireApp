@@ -151,10 +151,10 @@ class TreatmentLinesPage extends Component
         $this->cancelTreatmentEdit();
     }
 
-    public function deleteTreatment(int $id): void
+    public function cancelTreatment(int $id): void
     {
-        $this->treatments()->deleteTreatment($id);
-        session()->flash('status', __('Treatment removed.'));
+        $this->treatments()->cancelTreatment($id);
+        session()->flash('status', __('Treatment cancelled.'));
     }
 
     public function startEditSession(int $treatmentId, int $sessionId): void

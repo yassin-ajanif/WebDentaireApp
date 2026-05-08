@@ -21,6 +21,8 @@ interface TreatmentInfoServiceInterface
 
     public function deleteTreatment(int $id): void;
 
+    public function cancelTreatment(int $id): void;
+
     public function createSession(int $treatmentId, array $data): Session;
 
     public function updateSession(int $sessionId, array $data): Session;

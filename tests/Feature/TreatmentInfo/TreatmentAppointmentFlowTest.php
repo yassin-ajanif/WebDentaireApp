@@ -123,7 +123,7 @@ class TreatmentAppointmentFlowTest extends TestCase
         Livewire::withQueryParams(['treatment' => $treatment->id])
             ->test(TreatmentLinesPage::class, ['patient' => $patient->id])
             ->assertSet("expandedTreatments.{$treatment->id}", true)
-            ->assertSee(__('Treatment correction history'));
+            ->assertSee(__('Dates'));
     }
 
     public function test_updating_session_requires_session_correction_reason(): void

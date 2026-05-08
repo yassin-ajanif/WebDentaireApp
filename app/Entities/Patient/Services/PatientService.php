@@ -32,12 +32,14 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
 
         if ($paymentFilter === 'unpaid') {
             $q->whereHas('treatmentInfos', function ($inner): void {
-                $inner->where('remaining_amount', '>', 0);
+                $inner->where('status', \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Unpaid);
             });
         } elseif ($paymentFilter === 'paid') {
-            $q->whereHas('treatmentInfos')
+            $q->whereHas('treatmentInfos', function ($inner): void {
+                $inner->where('status', \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Paid);
+            })
                 ->whereDoesntHave('treatmentInfos', function ($inner): void {
-                    $inner->where('remaining_amount', '>', 0);
+                    $inner->where('status', \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Unpaid);
                 });
         }
 

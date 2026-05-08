@@ -70,19 +70,26 @@
                 $remaining = number_format((float) $treatment->remaining_amount, 2, '.', '');
                 $hasRemaining = (float) $remaining > 0;
                 $isExpanded = (bool) ($expandedTreatments[$treatment->id] ?? false);
-                $status = (float) $remaining <= 0 ? __('Paid') : ((float) $totalPaid > 0 ? __('Partially paid') : __('Non paid'));
-                $statusStyle = (float) $remaining <= 0
-                    ? 'background-color: color-mix(in srgb, #22c55e 22%, white); color: #166534;'
-                    : ((float) $totalPaid > 0
+                $isCancelled = $treatment->status === \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Cancelled;
+                $status = match($treatment->status) {
+                    \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Paid => __('Paid'),
+                    \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Cancelled => __('Cancelled'),
+                    default => (float) $totalPaid > 0 ? __('Partially paid') : __('Non paid'),
+                };
+                $statusStyle = match($treatment->status) {
+                    \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Paid => 'background-color: color-mix(in srgb, #22c55e 22%, white); color: #166534;',
+                    \App\Entities\TreatmentInfo\Enums\TreatmentStatus::Cancelled => 'background-color: color-mix(in srgb, #ef4444 22%, white); color: #991b1b;',
+                    default => (float) $totalPaid > 0
                         ? 'background-color: color-mix(in srgb, #3b82f6 20%, white); color: #1d4ed8;'
-                        : 'background-color: color-mix(in srgb, #f59e0b 26%, white); color: #b45309;');
+                        : 'background-color: color-mix(in srgb, #f59e0b 26%, white); color: #b45309;',
+                };
                 $form = $sessionForms[$treatment->id] ?? ['session_date' => now()->format('Y-m-d\TH:i'), 'received_payment' => '0.00', 'notes' => ''];
             @endphp
-            <div class="app-card overflow-hidden shadow-sm" wire:key="treatment-{{ $treatment->id }}">
-                <div class="border-b px-5 py-3" style="background-color: var(--color-action-primary); border-color: color-mix(in srgb, var(--color-action-primary) 82%, black);">
+            <div class="app-card overflow-hidden shadow-sm {{ $isCancelled ? 'opacity-75' : '' }}" wire:key="treatment-{{ $treatment->id }}">
+                <div class="border-b px-5 py-3" style="background-color: {{ $isCancelled ? '#6b7280' : 'var(--color-action-primary)' }}; border-color: color-mix(in srgb, {{ $isCancelled ? '#6b7280' : 'var(--color-action-primary)' }} 82%, black);">
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 flex items-center gap-2 overflow-x-auto">
-                            <h2 class="shrink-0 text-lg font-semibold text-white">{{ $treatment->description }}</h2>
+                            <h2 class="shrink-0 text-lg font-semibold text-white {{ $isCancelled ? 'line-through' : '' }}">{{ $treatment->description }}</h2>
                             
                         <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium" style="background-color: color-mix(in srgb, white 16%, transparent); color: white;">
                             {{ __('Global: :value DH', ['value' => number_format((float) $treatment->global_price, 2, '.', '')]) }}
@@ -90,7 +97,7 @@
                         <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium" style="background-color: color-mix(in srgb, white 16%, transparent); color: white;">
                             {{ __('Payé: :value DH', ['value' => $totalPaid]) }}
                         </span>
-                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium {{ $hasRemaining ? 'border' : '' }}" style="background-color: color-mix(in srgb, white 16%, transparent); {{ $hasRemaining ? 'border-color: #fdba74;' : '' }} color: white;">
+                        <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium {{ $hasRemaining && !$isCancelled ? 'border' : '' }}" style="background-color: color-mix(in srgb, white 16%, transparent); {{ $hasRemaining && !$isCancelled ? 'border-color: #fdba74;' : '' }} color: white;">
                             {{ __('Reste: :value DH', ['value' => $remaining]) }}
                         </span>
                         <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold" style="{{ $statusStyle }}">
@@ -123,39 +130,41 @@
                                 style="width: 21px; height: 21px;"
                                 title="{{ __('Modifier') }}"
                                 aria-label="{{ __('Modifier') }}"
+                                @disabled($isCancelled)
                             >
-                                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px; {{ $isCancelled ? 'opacity: 0.5;' : '' }}">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 1 1 2.97 2.97L8.25 18.04l-3.75.78.78-3.75L16.862 3.487z" />
                                 </svg>
                             </button>
+                            @if(!$isCancelled)
                             <button
                                 type="button"
-                                wire:click="deleteTreatment({{ $treatment->id }})"
-                                wire:confirm="{{ __('Supprimer ce traitement ?') }}"
+                                wire:click="cancelTreatment({{ $treatment->id }})"
+                                wire:confirm="{{ __('Annuler ce traitement ?') }}"
                                 class="inline-flex items-center justify-center rounded-md hover:bg-white/15"
                                 style="width: 21px; height: 21px;"
-                                title="{{ __('Supprimer') }}"
-                                aria-label="{{ __('Supprimer') }}"
+                                title="{{ __('Annuler') }}"
+                                aria-label="{{ __('Annuler') }}"
                             >
                                 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 21px; height: 21px;">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                    <path d="M10 11v6"/>
-                                    <path d="M14 11v6"/>
-                                    <path d="M9 6V4h6v2"/>
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
                                 </svg>
                             </button>
+                            @endif
                         </div>
                     </div>
                 </div>
 
                 @if($isExpanded)
                     <div class="app-divider p-5 pt-3">
+                        @if(!$isCancelled)
                         <div class="mb-3 flex items-center justify-center">
                             <button type="button" wire:click="openSessionForm({{ $treatment->id }})" class="app-btn-primary px-3 py-1.5 text-sm" title="{{ __('Ajouter une séance') }}">+</button>
                         </div>
+                        @endif
 
-                        @if($activeSessionFormTreatmentId === $treatment->id)
+                        @if($activeSessionFormTreatmentId === $treatment->id && !$isCancelled)
                             <form wire:submit.prevent="saveSession({{ $treatment->id }})" class="flex flex-wrap items-end gap-3">
                                 <div class="min-w-[220px] flex-1">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Date') }}</label>

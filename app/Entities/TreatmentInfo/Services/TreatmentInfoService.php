@@ -4,6 +4,7 @@ namespace App\Entities\TreatmentInfo\Services;
 
 use App\Entities\Appointment\Contracts\PatientLookupInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
+use App\Entities\TreatmentInfo\Enums\TreatmentStatus;
 use App\Entities\TreatmentInfo\Models\Session;
 use App\Entities\TreatmentInfo\Models\SessionCorrection;
 use App\Entities\TreatmentInfo\Models\TreatmentCorrection;
@@ -41,11 +42,14 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
             $globalPrice = $this->normalizeMoney($data['global_price'] ?? '0');
             $this->assertNonNegative($globalPrice, __('Global price must be zero or greater.'));
 
+            $status = bccomp($globalPrice, '0.00', 2) === 0 ? TreatmentStatus::Paid : TreatmentStatus::Unpaid;
+
             return TreatmentInfo::query()->create([
                 'patient_id' => $patientId,
                 'description' => (string) ($data['description'] ?? ''),
                 'global_price' => $globalPrice,
                 'remaining_amount' => $globalPrice,
+                'status' => $status,
             ]);
         });
     }
@@ -59,6 +63,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->with('sessions')
                 ->findOrFail($id);
 
+            if ($row->status === TreatmentStatus::Cancelled) {
+                throw new DomainException(__('Cannot update a cancelled treatment.'));
+            }
+
             $globalPrice = $this->normalizeMoney($data['global_price'] ?? $row->global_price);
             $this->assertNonNegative($globalPrice, __('Global price must be zero or greater.'));
 
@@ -68,10 +76,13 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
             }
 
             $remaining = bcsub($globalPrice, $paid, 2);
+            $status = bccomp($remaining, '0.00', 2) === 0 ? TreatmentStatus::Paid : TreatmentStatus::Unpaid;
+
             $row->update([
                 'description' => $data['description'] ?? $row->description,
                 'global_price' => $globalPrice,
                 'remaining_amount' => $remaining,
+                'status' => $status,
             ]);
 
             return $row->fresh();
@@ -83,6 +94,11 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
         TreatmentInfo::query()->whereKey($id)->delete();
     }
 
+    public function cancelTreatment(int $id): void
+    {
+        TreatmentInfo::query()->whereKey($id)->update(['status' => TreatmentStatus::Cancelled]);
+    }
+
     public function createSession(int $treatmentId, array $data): Session
     {
         return DB::transaction(function () use ($treatmentId, $data) {
@@ -91,6 +107,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->lockForUpdate()
                 ->with('sessions')
                 ->findOrFail($treatmentId);
+
+            if ($treatment->status === TreatmentStatus::Cancelled) {
+                throw new DomainException(__('Cannot add session to a cancelled treatment.'));
+            }
 
             $payment = $this->normalizeMoney($data['received_payment'] ?? '0');
             $this->assertNonNegative($payment, __('Received payment must be zero or greater.'));
@@ -126,6 +146,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->lockForUpdate()
                 ->with('sessions')
                 ->findOrFail($session->treatment_info_id);
+
+            if ($treatment->status === TreatmentStatus::Cancelled) {
+                throw new DomainException(__('Cannot update session of a cancelled treatment.'));
+            }
 
             $newPayment = $this->normalizeMoney($data['received_payment'] ?? $session->received_payment);
             $this->assertNonNegative($newPayment, __('Received payment must be zero or greater.'));
@@ -169,6 +193,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->with('sessions')
                 ->findOrFail($session->treatment_info_id);
 
+            if ($treatment->status === TreatmentStatus::Cancelled) {
+                throw new DomainException(__('Cannot delete session of a cancelled treatment.'));
+            }
+
             $session->delete();
             $this->syncRemainingAmount($treatment);
         });
@@ -191,6 +219,10 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
                 ->lockForUpdate()
                 ->with('sessions')
                 ->findOrFail($treatmentId);
+
+            if ($treatment->status === TreatmentStatus::Cancelled) {
+                throw new DomainException(__('Cannot correct a cancelled treatment.'));
+            }
 
             $newGlobalPrice = $this->normalizeMoney($data['global_price'] ?? $treatment->global_price);
             $this->assertNonNegative($newGlobalPrice, __('Global price must be zero or greater.'));
@@ -222,10 +254,13 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
             ]);
 
             $remaining = bcsub($newGlobalPrice, $paid, 2);
+            $status = bccomp($remaining, '0.00', 2) === 0 ? TreatmentStatus::Paid : TreatmentStatus::Unpaid;
+
             $treatment->update([
                 'description' => $newDescription,
                 'global_price' => $newGlobalPrice,
                 'remaining_amount' => $remaining,
+                'status' => $status,
             ]);
 
             return $correction->fresh();
@@ -273,11 +308,18 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
 
     private function syncRemainingAmount(TreatmentInfo $treatment): void
     {
+        if ($treatment->status === TreatmentStatus::Cancelled) {
+            return;
+        }
+
         $totalPaid = $this->sumSessionPayments($treatment->fresh('sessions'));
         $remaining = bcsub((string) $treatment->global_price, $totalPaid, 2);
 
+        $status = bccomp($remaining, '0.00', 2) === 0 ? TreatmentStatus::Paid : TreatmentStatus::Unpaid;
+
         $treatment->update([
             'remaining_amount' => $remaining,
+            'status' => $status,
         ]);
     }
 
