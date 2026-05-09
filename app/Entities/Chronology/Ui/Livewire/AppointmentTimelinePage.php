@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Entities\Appointment\Ui\Livewire;
+namespace App\Entities\Chronology\Ui\Livewire;
 
-use App\Entities\Appointment\Contracts\AppointmentServiceInterface;
+use App\Entities\Chronology\Contracts\ChronologyServiceInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Layout;
@@ -36,35 +36,34 @@ class AppointmentTimelinePage extends Component
     public function render()
     {
         $date = Carbon::parse($this->selectedDate);
-        $rows = $this->appointments()->listCompletedTimeline($date)
-            ->sortBy('started_at')
-            ->values()
-            ->map(function ($appointment) {
-                $startedAt = $appointment->started_at;
-                $completedAt = $appointment->completed_at;
-                if ($startedAt === null || $completedAt === null) {
-                    return null;
+
+        $sessionRows = $this->chronology()->getSessionsForDay($date)
+            ->map(function ($row) {
+                $startedAt = Carbon::parse($row->started_at);
+                $completedAt = Carbon::parse($row->completed_at);
+
+                $name = trim($row->first_name . ' ' . $row->last_name);
+                if ($name === '') {
+                    $name = '#' . $row->patient_id;
                 }
 
                 return [
-                    'id' => $appointment->id,
-                    'off' => $appointment->queueDisplayName(),
-                    'patient_id' => $appointment->patient_id,
-                    'treatment_info_id' => $appointment->treatment_info_id ? (int) $appointment->treatment_info_id : null,
+                    'patient_id' => $row->patient_id,
+                    'treatment_info_id' => (int) $row->latest_treatment_info_id,
+                    'off' => $name,
                     'started_at_raw' => $startedAt,
                     'completed_at_raw' => $completedAt,
                     'started_at' => $startedAt->format('H:i'),
                     'completed_at' => $completedAt->format('H:i'),
-                    'received' => number_format((float) ($appointment->received_total ?? 0), 2, '.', ''),
+                    'received' => number_format((float) ($row->received_total ?? 0), 2, '.', ''),
                 ];
             })
-            ->filter()
             ->values();
 
         $gapAlerts = collect();
-        for ($i = 1; $i < $rows->count(); $i++) {
-            $previous = $rows[$i - 1];
-            $current = $rows[$i];
+        for ($i = 1; $i < $sessionRows->count(); $i++) {
+            $previous = $sessionRows[$i - 1];
+            $current = $sessionRows[$i];
             $gapMinutes = $previous['completed_at_raw']->diffInMinutes($current['started_at_raw'], false);
 
             if ($gapMinutes > 30) {
@@ -76,26 +75,31 @@ class AppointmentTimelinePage extends Component
             }
         }
 
-        $cancellations = $this->treatments()->listCancellationsForDate($date);
-        $totalReceived = $rows->sum(fn (array $row) => (float) $row['received']);
-        $totalCancelled = $cancellations->sum(fn (array $c) => $c['refund_amount']);
-        $netTotal = $totalReceived - $totalCancelled;
+        $cancelledTreatments = $this->treatments()->listCancellationsForDate($date);
+        $cancelledSessions = $this->chronology()->getCancelledSessionsForDay($date);
 
-        return view('appointment::appointment-timeline-page', [
+        $totalReceived = $sessionRows->sum(fn (array $row) => (float) $row['received']);
+        $totalCancelledTreatments = $cancelledTreatments->sum(fn ($c) => $c['refund_amount'] ?? (float) $c->refund_amount);
+        $totalCancelledSessions = $cancelledSessions->sum(fn ($s) => (float) $s->refund_amount);
+        $netTotal = $totalReceived - $totalCancelledTreatments - $totalCancelledSessions;
+
+        return view('chronology::appointment-timeline-page', [
             'selectedDateLabel' => $date->translatedFormat('l d/m/Y'),
-            'rows' => $rows,
+            'sessionRows' => $sessionRows,
             'gapAlerts' => $gapAlerts,
-            'cancellations' => $cancellations,
+            'cancelledTreatments' => $cancelledTreatments,
+            'cancelledSessions' => $cancelledSessions,
             'totalReceived' => number_format($totalReceived, 2, '.', ''),
-            'totalCancelled' => number_format($totalCancelled, 2, '.', ''),
+            'totalCancelledTreatments' => number_format($totalCancelledTreatments, 2, '.', ''),
+            'totalCancelledSessions' => number_format($totalCancelledSessions, 2, '.', ''),
             'netTotal' => number_format($netTotal, 2, '.', ''),
             'isToday' => $date->isToday(),
         ])->title(__('Chronologie des rendez-vous'));
     }
 
-    private function appointments(): AppointmentServiceInterface
+    private function chronology(): ChronologyServiceInterface
     {
-        return app(AppointmentServiceInterface::class);
+        return app(ChronologyServiceInterface::class);
     }
 
     private function treatments(): TreatmentInfoServiceInterface

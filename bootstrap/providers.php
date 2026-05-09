@@ -1,6 +1,7 @@
 <?php
 
 use App\Entities\Appointment\AppointmentServiceProvider;
+use App\Entities\Chronology\ChronologyServiceProvider;
 use App\Entities\Patient\PatientServiceProvider;
 use App\Entities\Report\ReportServiceProvider;
 use App\Entities\Setting\SettingServiceProvider;
@@ -14,4 +15,5 @@ return [
     AppointmentServiceProvider::class,
     TreatmentInfoServiceProvider::class,
     ReportServiceProvider::class,
+    ChronologyServiceProvider::class,
 ];

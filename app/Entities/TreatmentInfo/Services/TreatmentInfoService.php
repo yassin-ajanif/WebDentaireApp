@@ -361,18 +361,28 @@ class TreatmentInfoService implements TreatmentInfoServiceInterface
 
     public function listCancellationsForDate(Carbon $date): SupportCollection
     {
-        return TreatmentInfo::query()
-            ->with(['sessions' => fn ($q) => $q->where('status', '!=', 'cancelled'), 'patient'])
-            ->whereDate('cancelled_at', $date->toDateString())
-            ->get()
-            ->map(fn (TreatmentInfo $treatment) => [
-                'patient_name' => $treatment->patient?->displayName() ?? __('Deleted patient'),
-                'treatment_description' => $treatment->description,
-                'refund_amount' => (float) $treatment->sessions->sum(fn ($s) => (float) $s->received_payment),
-                'treatment_id' => $treatment->id,
-                'patient_id' => $treatment->patient_id,
+        return DB::table('treatment_infos as ti')
+            ->join('patients as p', 'p.id', '=', 'ti.patient_id')
+            ->where('ti.status', '=', 'cancelled')
+            ->whereDate('ti.cancelled_at', $date->toDateString())
+            ->where(DB::raw('ti.global_price - ti.remaining_amount'), '>', 0)
+            ->select([
+                'ti.id as treatment_id',
+                'ti.patient_id',
+                'ti.description as treatment_description',
+                'ti.global_price',
+                'ti.remaining_amount',
+                DB::raw('ti.global_price - ti.remaining_amount as refund_amount'),
+                'p.first_name',
+                'p.last_name',
             ])
-            ->filter(fn (array $row) => $row['refund_amount'] > 0)
-            ->values();
+            ->get()
+            ->map(fn ($row) => [
+                'patient_name' => trim($row->first_name . ' ' . $row->last_name) ?: '#' . $row->patient_id,
+                'treatment_description' => $row->treatment_description,
+                'refund_amount' => (float) $row->refund_amount,
+                'treatment_id' => $row->treatment_id,
+                'patient_id' => $row->patient_id,
+            ]);
     }
 }
