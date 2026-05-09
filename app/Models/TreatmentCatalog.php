@@ -9,7 +9,14 @@ class TreatmentCatalog extends Model
 {
     protected $table = 'treatment_catalog';
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'price'];
+
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+        ];
+    }
 
     public function activities(): HasMany
     {
