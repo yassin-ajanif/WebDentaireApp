@@ -23,5 +23,13 @@
                 {{ __('Deleted patients') }}
             </a>
         </div>
+
+        <div class="app-card p-6 shadow-sm">
+            <h2 class="app-title mb-1 text-lg font-medium">{{ __('Treatment catalog') }}</h2>
+            <p class="app-subtitle mb-4 text-sm">{{ __('Manage treatments and their activities.') }}</p>
+            <a href="{{ route('settings.treatments.catalog') }}" class="app-btn-primary inline-flex items-center justify-center px-4 py-2 text-sm font-medium">
+                {{ __('Manage catalog') }}
+            </a>
+        </div>
     </div>
 </div>
