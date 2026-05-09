@@ -284,6 +284,22 @@ class TreatmentLinesPage extends Component
             return;
         }
 
+        $treatments = $this->treatments()->listForPatient($this->patient);
+        $startedAt = $appointment->started_at;
+        $hasSessions = $startedAt !== null
+            && $treatments->contains(
+                fn (TreatmentInfo $t) => $t->sessions->contains(
+                    fn (Session $s) => $s->status !== SessionStatus::Cancelled->value
+                        && $s->created_at !== null
+                        && $s->created_at >= $startedAt
+                )
+            );
+
+        if (! $hasSessions) {
+            session()->flash('error', __('Ajoutez au moins une séance avant de terminer.'));
+            return;
+        }
+
         try {
             $this->appointments()->transitionStatus($appointment->id, AppointmentStatus::Done);
             session()->flash('status', __('Session terminée.'));
@@ -316,6 +332,20 @@ class TreatmentLinesPage extends Component
         $totalGlobal = $activeTreatments->sum(fn (TreatmentInfo $treatment): float => (float) $treatment->global_price);
         $totalPaid = max(0, $totalGlobal - $totalRemaining);
 
+        $appointment = $this->activeAppointmentId !== null
+            ? $this->appointments()->find($this->activeAppointmentId)
+            : null;
+
+        $startedAt = $appointment?->started_at;
+        $hasSessions = $startedAt !== null
+            && $activeTreatments->contains(
+                fn (TreatmentInfo $t) => $t->sessions->contains(
+                    fn (Session $s) => $s->status !== SessionStatus::Cancelled->value
+                        && $s->created_at !== null
+                        && $s->created_at >= $startedAt
+                )
+            );
+
         return view('treatment_info::treatment-lines-page', [
             'patientModel' => $patientModel,
             'treatments' => $treatments,
@@ -323,6 +353,7 @@ class TreatmentLinesPage extends Component
             'totalPaidAmount' => number_format($totalPaid, 2, '.', ''),
             'totalRemainingAmount' => number_format($totalRemaining, 2, '.', ''),
             'showFinishAppointmentButton' => $this->activeAppointmentId !== null,
+            'hasSessions' => $hasSessions,
             'highlightSessionDate' => $this->highlightSessionDate,
             'treatmentCatalog' => $this->catalog()->getCatalog(),
         ])->title(__('Treatments'));

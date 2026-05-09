@@ -91,9 +91,14 @@
         <a href="{{ route('patients.index') }}" class="app-title mt-2 inline-block text-sm hover:underline">{{ __('Back to patients') }}</a>
         @if($showFinishAppointmentButton)
             <div class="mt-3">
-                <button type="button" wire:click="finishAppointment" class="app-btn-primary px-4 py-2 text-sm font-medium">
+                <button type="button" wire:click="finishAppointment"
+                    class="app-btn-primary px-4 py-2 text-sm font-medium"
+                    @if(!$hasSessions) disabled style="opacity: 0.5; cursor: not-allowed;" @endif>
                     {{ __('Terminer la consultation') }}
                 </button>
+                @if(!$hasSessions)
+                    <p class="mt-1 text-xs" style="color: #dc2626;">{{ __('Ajoutez au moins une séance avant de terminer.') }}</p>
+                @endif
             </div>
         @endif
     </div>
