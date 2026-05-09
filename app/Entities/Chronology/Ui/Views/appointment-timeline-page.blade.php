@@ -37,6 +37,7 @@
     @endif
 
     {{-- Table 1: Sessions du jour --}}
+    <h2 class="mb-1 text-sm font-semibold app-title">{{ __('Séances du jour — montants reçus') }}</h2>
     <div class="mb-6 overflow-hidden rounded-xl border bg-white/80"
         style="border-color: color-mix(in srgb, var(--color-raw-gray-stroke) 35%, white);">
         <div class="grid border-b px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide app-text-gray"
@@ -78,6 +79,7 @@
 
     {{-- Table 2: Traitements annulés --}}
     @if($cancelledTreatments->isNotEmpty())
+        <h2 class="mb-1 text-sm font-semibold app-title">{{ __('Traitements annulés — remboursements') }}</h2>
         <div class="mb-6 overflow-hidden rounded-xl border bg-white/80"
             style="border-color: color-mix(in srgb, #dc2626 35%, white);">
             <div class="grid border-b px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide app-text-gray"
@@ -126,6 +128,7 @@
 
     {{-- Table 3: Sessions annulées --}}
     @if($cancelledSessions->isNotEmpty())
+        <h2 class="mb-1 text-sm font-semibold app-title">{{ __('Séances annulées — remboursements') }}</h2>
         <div class="mb-6 overflow-hidden rounded-xl border bg-white/80"
             style="border-color: color-mix(in srgb, #dc2626 35%, white);">
             <div class="grid border-b px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide app-text-gray"
