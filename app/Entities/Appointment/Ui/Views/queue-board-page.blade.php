@@ -48,6 +48,11 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="app-card w-full max-w-md bg-white/95 p-4 shadow-xl">
                 <div class="app-divider mb-3 border-b pb-2 text-sm font-semibold app-title">{{ __('Nouveau numéro') }}</div>
+                @if($dialogError)
+                    <div class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900" role="alert">
+                        {{ $dialogError }}
+                    </div>
+                @endif
                 <form wire:submit="saveNewDialog" class="space-y-3">
                     <div class="grid grid-cols-[90px_1fr] items-start gap-2">
                         <label class="app-text-gray text-sm pt-1.5">{{ __('Nom') }}</label>

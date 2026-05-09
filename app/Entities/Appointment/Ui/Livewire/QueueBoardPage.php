@@ -30,6 +30,8 @@ class QueueBoardPage extends Component
 
     public string $existingPatientDisplayName = '';
 
+    public string $dialogError = '';
+
     private function appointments(): AppointmentServiceInterface
     {
         return app(AppointmentServiceInterface::class);
@@ -49,6 +51,7 @@ class QueueBoardPage extends Component
     {
         $this->resetValidation();
         $this->resetExistingPatientConfirm();
+        $this->dialogError = '';
         $this->showNewDialog = true;
     }
 
@@ -56,6 +59,7 @@ class QueueBoardPage extends Component
     {
         $this->showNewDialog = false;
         $this->resetExistingPatientConfirm();
+        $this->dialogError = '';
         $this->reset(['newName', 'newAge', 'newAddress', 'newTelephone']);
     }
 
@@ -75,7 +79,7 @@ class QueueBoardPage extends Component
             $this->closeNewDialog();
             session()->flash('status', __('Nouveau numéro enregistré.'));
         } catch (DomainException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->dialogError = $e->getMessage();
             $this->resetExistingPatientConfirm();
         }
     }
@@ -133,7 +137,7 @@ class QueueBoardPage extends Component
             $this->closeNewDialog();
             session()->flash('status', __('Nouveau numéro enregistré.'));
         } catch (DomainException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->dialogError = $e->getMessage();
         }
     }
 
