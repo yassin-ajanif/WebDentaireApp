@@ -1,4 +1,77 @@
 <div class="pl-0 pr-3 sm:pr-4">
+    <style>.ac-dropdown{display:none;position:absolute;z-index:9999;margin-top:4px;width:100%;border-radius:6px;border:1px solid #d1d5db;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto}.ac-dropdown.show{display:block}.ac-item{cursor:pointer;padding:6px 12px;font-size:14px;color:#374151}.ac-item:hover,.ac-item.highlighted{background:#eff6ff;color:#1e3a8a}</style>
+    <script>
+        window.__treatmentCatalog = @json($treatmentCatalog);
+        function acItems(input) {
+            var q = (input.value||'').toLowerCase().trim();
+            if (!q) return [];
+            return (window.__treatmentCatalog||[]).filter(function(i){return i.name.toLowerCase().includes(q)});
+        }
+        function acRender(input) {
+            var d=document.getElementById('treatment-desc-dropdown'); if(!d)return;
+            var items=acItems(input);
+            if(!items.length){d.classList.remove('show');d._idx=-1;return;}
+            d.innerHTML=''; d._idx=-1;
+            items.forEach(function(it,i){
+                var el=document.createElement('div'); el.className='ac-item'; el.textContent=it.name; el.dataset.idx=i;
+                el.addEventListener('mousedown',function(e){e.preventDefault();acPick(input,it)});
+                d.appendChild(el);
+            });
+            d.classList.add('show');
+        }
+        function acPick(input,item) {
+            input.value=item.name; input.dispatchEvent(new Event('input',{bubbles:true}));
+            var p=document.getElementById('global-price-input');
+            if(p){p.value=item.price!=null?item.price:'';p.dispatchEvent(new Event('input',{bubbles:true}))}
+            var d=document.getElementById('treatment-desc-dropdown'); if(d)d.classList.remove('show');
+        }
+        function acKey(ev,input) {
+            var d=document.getElementById('treatment-desc-dropdown'); if(!d)return;
+            if(ev.key==='ArrowDown'){ev.preventDefault();acNav(d,1)}
+            else if(ev.key==='ArrowUp'){ev.preventDefault();acNav(d,-1)}
+            else if(ev.key==='Enter'&&d.classList.contains('show')){ev.preventDefault();acSel(input,d)}
+            else if(ev.key==='Escape'){d.classList.remove('show')}
+        }
+        function acNav(d,dir){
+            var items=d.querySelectorAll('.ac-item'); if(!items.length)return;
+            items.forEach(function(el){el.classList.remove('highlighted')});
+            if(d._idx==null)d._idx=-1;
+            d._idx=(d._idx+dir+items.length)%items.length;
+            items[d._idx].classList.add('highlighted'); items[d._idx].scrollIntoView({block:'nearest'});
+        }
+        function acSel(input,d){
+            var items=d.querySelectorAll('.ac-item');
+            if(d._idx>=0&&items[d._idx]){
+                var a=acItems(input); var idx=parseInt(items[d._idx].dataset.idx);
+                if(a[idx])acPick(input,a[idx]);
+            }
+        }
+        function acBlur(){setTimeout(function(){var d=document.getElementById('treatment-desc-dropdown');if(d)d.classList.remove('show')},180)}
+        window.__allActivities=(window.__treatmentCatalog||[]).flatMap(function(c){return c.activities||[]}).filter(function(a,i,s){return s.indexOf(a)===i}).sort();
+        function snItems(input){var q=(input.value||'').toLowerCase().trim();if(!q)return [];return (window.__allActivities||[]).filter(function(a){return a.toLowerCase().includes(q)})}
+        function snRender(input){
+            var did=input.id.replace(/(\w+)-(\d+)$/,'$1-dropdown-$2');var d=document.getElementById(did);if(!d)return;
+            var items=snItems(input);if(!items.length){d.classList.remove('show');d._idx=-1;return;}
+            d.innerHTML='';d._idx=-1;items.forEach(function(a,i){
+                var el=document.createElement('div');el.className='ac-item';el.textContent=a;el.dataset.idx=i;
+                el.addEventListener('mousedown',function(e){e.preventDefault();snPick(input,a)});d.appendChild(el)});
+            d.classList.add('show');
+        }
+        function snPick(input,val){input.value=val;input.dispatchEvent(new Event('input',{bubbles:true}));snClose(input)}
+        function snClose(input){var d=document.getElementById(input.id.replace(/(\w+)-(\d+)$/,'$1-dropdown-$2'));if(d)d.classList.remove('show')}
+        function snKey(ev,input){
+            var did=input.id.replace(/(\w+)-(\d+)$/,'$1-dropdown-$2');var d=document.getElementById(did);if(!d)return;
+            if(ev.key==='ArrowDown'){ev.preventDefault();acNav(d,1)}
+            else if(ev.key==='ArrowUp'){ev.preventDefault();acNav(d,-1)}
+            else if(ev.key==='Enter'&&d.classList.contains('show')){ev.preventDefault();snSel(input,d)}
+            else if(ev.key==='Escape'){d.classList.remove('show')}
+        }
+        function snSel(input,d){
+            var items=d.querySelectorAll('.ac-item');
+            if(d._idx>=0&&items[d._idx]){var a=snItems(input);var idx=parseInt(items[d._idx].dataset.idx);if(a[idx])snPick(input,a[idx])}
+        }
+        function snBlur(input){setTimeout(function(){snClose(input)},180)}
+    </script>
     <div class="mb-6">
         <h1 class="app-title text-2xl font-semibold">{{ __('Treatments') }}</h1>
         @if($patientModel)
@@ -37,14 +110,18 @@
             <div class="app-card w-full max-w-xl bg-white p-5 shadow-xl">
                 <h2 class="app-title mb-4 text-lg font-medium">{{ $editingTreatmentId ? __('Edit treatment') : __('Add treatment') }}</h2>
                 <form wire:submit="saveTreatment" class="space-y-4">
-                    <div>
+                    <div class="relative">
                         <label class="app-text-gray block text-sm font-medium">{{ __('Treatment type / description') }}</label>
-                        <input type="text" wire:model="treatmentDescription" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                        <input type="text" wire:model="treatmentDescription" id="treatment-desc-input"
+                               oninput="acRender(this)" onkeydown="acKey(event,this)" onblur="acBlur()"
+                               class="app-input mt-1 block w-full px-3 py-2 text-sm"
+                               autocomplete="off" />
                         @error('treatmentDescription') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <div id="treatment-desc-dropdown" class="ac-dropdown"></div>
                     </div>
                     <div>
                         <label class="app-text-gray block text-sm font-medium">{{ __('Global price') }}</label>
-                        <input type="text" wire:model="globalPrice" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                        <input type="text" wire:model="globalPrice" id="global-price-input" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
                         @error('globalPrice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     @if($editingTreatmentId !== null)
@@ -174,9 +251,12 @@
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Reçu') }}</label>
                                     <input type="text" wire:model="sessionForms.{{ $treatment->id }}.received_payment" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
                                 </div>
-                                <div class="min-w-[260px] flex-[2]">
+                                <div class="min-w-[260px] flex-[2] relative">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Natures des Opérations') }}</label>
-                                    <input type="text" wire:model="sessionForms.{{ $treatment->id }}.notes" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                                    <input type="text" wire:model="sessionForms.{{ $treatment->id }}.notes" id="session-notes-{{ $treatment->id }}"
+                                           oninput="snRender(this)" onkeydown="snKey(event,this)" onblur="snBlur(this)"
+                                           class="app-input mt-1 block w-full px-3 py-2 text-sm" autocomplete="off" />
+                                    <div id="session-notes-dropdown-{{ $treatment->id }}" class="ac-dropdown"></div>
                                 </div>
                                 @if($editingSessionId && $editingSessionTreatmentId === $treatment->id)
                                     <div class="min-w-[260px] flex-[2]">

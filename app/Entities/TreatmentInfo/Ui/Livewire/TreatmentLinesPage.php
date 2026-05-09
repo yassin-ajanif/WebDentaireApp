@@ -5,6 +5,7 @@ namespace App\Entities\TreatmentInfo\Ui\Livewire;
 use App\Entities\Appointment\Contracts\AppointmentServiceInterface;
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Patient\Contracts\PatientServiceInterface;
+use App\Entities\TreatmentInfo\Contracts\TreatmentCatalogServiceInterface;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
 use App\Entities\TreatmentInfo\Enums\SessionStatus;
 use App\Entities\TreatmentInfo\Enums\TreatmentStatus;
@@ -323,6 +324,7 @@ class TreatmentLinesPage extends Component
             'totalRemainingAmount' => number_format($totalRemaining, 2, '.', ''),
             'showFinishAppointmentButton' => $this->activeAppointmentId !== null,
             'highlightSessionDate' => $this->highlightSessionDate,
+            'treatmentCatalog' => $this->catalog()->getCatalog(),
         ])->title(__('Treatments'));
     }
 
@@ -336,6 +338,11 @@ class TreatmentLinesPage extends Component
         $session = $treatment->sessions->firstWhere('id', $sessionId);
 
         return $session instanceof Session ? $session : null;
+    }
+
+    private function catalog(): TreatmentCatalogServiceInterface
+    {
+        return app(TreatmentCatalogServiceInterface::class);
     }
 
     private function treatments(): TreatmentInfoServiceInterface
