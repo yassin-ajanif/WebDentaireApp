@@ -71,6 +71,12 @@ class TreatmentLinesPage extends Component
                 && $appointment->status === AppointmentStatus::InProgress
             ) {
                 $this->activeAppointmentId = $appointmentId;
+
+                $treatments = $this->treatments()->listForPatient($this->patient);
+                $latest = $treatments->first();
+                if ($latest instanceof TreatmentInfo) {
+                    $this->expandedTreatments[$latest->id] = true;
+                }
             }
         }
 
