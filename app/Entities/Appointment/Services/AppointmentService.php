@@ -23,8 +23,13 @@ class AppointmentService implements AppointmentServiceInterface
             throw new DomainException(__('Unknown patient.'));
         }
 
-        if (Appointment::query()->whereDate('created_at', today())->exists()) {
-            throw new DomainException(__('Un rendez-vous existe déjà aujourd\'hui.'));
+        if ($patientId !== null && Appointment::query()
+            ->where('patient_id', $patientId)
+            ->whereIn('status', [AppointmentStatus::Waiting, AppointmentStatus::InProgress])
+            ->whereDate('created_at', today())
+            ->exists()
+        ) {
+            throw new DomainException(__('Ce patient a déjà un rendez-vous en attente.'));
         }
 
         return DB::transaction(function () use ($patientId) {

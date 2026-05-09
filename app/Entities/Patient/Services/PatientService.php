@@ -13,7 +13,7 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
 {
     public function exists(int $patientId): bool
     {
-        return Patient::query()->whereKey($patientId)->exists();
+        return Patient::withTrashed()->whereKey($patientId)->exists();
     }
 
     public function paginate(?string $search, string $paymentFilter = 'all', int $perPage = 15): LengthAwarePaginator
@@ -53,14 +53,14 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
 
     public function findByTelephone(string $telephone): ?Patient
     {
-        return Patient::query()->where('telephone', trim($telephone))->first();
+        return Patient::withTrashed()->where('telephone', trim($telephone))->first();
     }
 
     public function create(array $data): Patient
     {
         $telephone = trim($data['telephone']);
 
-        if (Patient::query()->where('telephone', $telephone)->exists()) {
+        if (Patient::withTrashed()->where('telephone', $telephone)->exists()) {
             throw ValidationException::withMessages([
                 'telephone' => __('A patient with this telephone already exists.'),
             ]);

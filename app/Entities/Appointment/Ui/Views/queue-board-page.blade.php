@@ -96,8 +96,14 @@
             <div class="fixed inset-0 z-[60] bg-black/30" aria-hidden="true"></div>
             <div class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="existing-patient-confirm-title">
                 <div class="app-card w-full max-w-md bg-white/95 p-4 shadow-xl">
-                    <h2 id="existing-patient-confirm-title" class="app-title mb-2 text-base font-semibold">{{ __('Existing patient') }}</h2>
-                    <p class="app-text-gray mb-4 text-sm leading-relaxed">{{ __('This phone number belongs to :name. Do you want to add :name to the queue?', ['name' => $existingPatientDisplayName]) }}</p>
+                    <h2 id="existing-patient-confirm-title" class="app-title mb-2 text-base font-semibold">{{ $existingPatientIsTrashed ? __('Restore patient') : __('Existing patient') }}</h2>
+                    <p class="app-text-gray mb-4 text-sm leading-relaxed">
+                        @if($existingPatientIsTrashed)
+                            {{ __('This patient (:name) is in the archive. Restore and add to queue?', ['name' => $existingPatientDisplayName]) }}
+                        @else
+                            {{ __('This phone number belongs to :name. Do you want to add :name to the queue?', ['name' => $existingPatientDisplayName]) }}
+                        @endif
+                    </p>
                     <div class="flex justify-end gap-2">
                         <button type="button" wire:click="cancelExistingPatientConfirm" class="app-btn-secondary px-3 py-1.5 text-sm">{{ __('Back') }}</button>
                         <button type="button" wire:click="confirmAddExistingPatientToQueue" class="app-btn-primary px-3 py-1.5 text-sm">{{ __('Add to queue') }}</button>

@@ -30,6 +30,8 @@ class QueueBoardPage extends Component
 
     public string $existingPatientDisplayName = '';
 
+    public bool $existingPatientIsTrashed = false;
+
     public string $dialogError = '';
 
     private function appointments(): AppointmentServiceInterface
@@ -75,6 +77,9 @@ class QueueBoardPage extends Component
         }
 
         try {
+            if ($this->existingPatientIsTrashed) {
+                $this->patients()->restore($this->existingPatientIdForConfirm);
+            }
             $this->appointments()->createTicket($this->existingPatientIdForConfirm);
             $this->closeNewDialog();
             session()->flash('status', __('Nouveau numéro enregistré.'));
@@ -89,12 +94,14 @@ class QueueBoardPage extends Component
         $this->showExistingPatientConfirm = false;
         $this->existingPatientIdForConfirm = null;
         $this->existingPatientDisplayName = '';
+        $this->existingPatientIsTrashed = false;
     }
 
     private function openExistingPatientConfirm(Patient $patient): void
     {
         $this->existingPatientIdForConfirm = $patient->id;
         $this->existingPatientDisplayName = $patient->displayName();
+        $this->existingPatientIsTrashed = $patient->trashed();
         $this->showExistingPatientConfirm = true;
     }
 
