@@ -242,7 +242,7 @@
                     <div class="app-divider p-5 pt-3">
                         @if(!$isCancelled)
                         <div class="mb-3 flex items-center justify-center">
-                            <button type="button" wire:click="openSessionForm({{ $treatment->id }})" class="app-btn-primary px-3 py-1.5 text-sm" title="{{ __('Ajouter une séance') }}">+</button>
+                            <button type="button" wire:click="openSessionForm({{ $treatment->id }})" class="app-btn-primary px-3 py-1.5 text-sm" title="{{ __('Ajouter une séance') }}" @if((float) $treatment->remaining_amount <= 0) disabled style="opacity:0.4;cursor:not-allowed" @endif>+</button>
                         </div>
                         @endif
 
@@ -255,6 +255,9 @@
                                 <div class="min-w-[140px] w-[180px]">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Reçu') }}</label>
                                     <input type="text" wire:model="sessionForms.{{ $treatment->id }}.received_payment" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
+                                    @if(($amountExceedsRemaining[$treatment->id] ?? false))
+                                        <p class="mt-1 text-xs" style="color: #dc2626;">{{ __('Le montant dépasse le reste à payer.') }}</p>
+                                    @endif
                                 </div>
                                 <div class="min-w-[260px] flex-[2] relative">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Natures des Opérations') }}</label>
@@ -271,7 +274,7 @@
                                     </div>
                                 @endif
                                 <div class="flex items-center gap-2">
-                                    <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium" @disabled((float) $remaining <= 0)>{{ $editingSessionId && $editingSessionTreatmentId === $treatment->id ? __('Update session') : __('Add session payment') }}</button>
+                                    <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium">{{ $editingSessionId && $editingSessionTreatmentId === $treatment->id ? __('Update session') : __('Add session payment') }}</button>
                                     <button type="button" wire:click="cancelSessionEdit({{ $treatment->id }})" class="app-btn-secondary px-4 py-2 text-sm">{{ __('Cancel') }}</button>
                                 </div>
                             </form>

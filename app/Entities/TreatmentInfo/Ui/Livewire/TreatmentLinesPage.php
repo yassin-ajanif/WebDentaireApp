@@ -258,12 +258,6 @@ class TreatmentLinesPage extends Component
         }
 
         $this->cancelSessionEdit($treatmentId);
-
-        if ($this->activeAppointmentId !== null) {
-            $this->finishAppointment();
-
-            return;
-        }
     }
 
     public function finishAppointment(): void
@@ -281,22 +275,6 @@ class TreatmentLinesPage extends Component
             session()->flash('error', __('Appointment cannot be completed from this page.'));
             $this->activeAppointmentId = null;
 
-            return;
-        }
-
-        $treatments = $this->treatments()->listForPatient($this->patient);
-        $startedAt = $appointment->started_at;
-        $hasSessions = $startedAt !== null
-            && $treatments->contains(
-                fn (TreatmentInfo $t) => $t->sessions->contains(
-                    fn (Session $s) => $s->status !== SessionStatus::Cancelled->value
-                        && $s->created_at !== null
-                        && $s->created_at >= $startedAt
-                )
-            );
-
-        if (! $hasSessions) {
-            session()->flash('error', __('Ajoutez au moins une séance avant de terminer.'));
             return;
         }
 
@@ -336,13 +314,23 @@ class TreatmentLinesPage extends Component
             ? $this->appointments()->find($this->activeAppointmentId)
             : null;
 
-        $startedAt = $appointment?->started_at;
-        $hasSessions = $startedAt !== null
+        $amountExceedsRemaining = [];
+        foreach ($this->sessionForms as $tid => $form) {
+            $treatment = $activeTreatments->firstWhere('id', $tid);
+            if ($treatment !== null) {
+                $entered = (float) ($form['received_payment'] ?? 0);
+                $maxAllowed = (float) $treatment->remaining_amount;
+                $amountExceedsRemaining[$tid] = $entered > $maxAllowed;
+            }
+        }
+
+        $hasSessions = $appointment !== null
+            && $appointment->started_at !== null
             && $activeTreatments->contains(
                 fn (TreatmentInfo $t) => $t->sessions->contains(
                     fn (Session $s) => $s->status !== SessionStatus::Cancelled->value
                         && $s->created_at !== null
-                        && $s->created_at >= $startedAt
+                        && $s->created_at >= $appointment->started_at
                 )
             );
 
@@ -356,6 +344,7 @@ class TreatmentLinesPage extends Component
             'hasSessions' => $hasSessions,
             'highlightSessionDate' => $this->highlightSessionDate,
             'treatmentCatalog' => $this->catalog()->getCatalog(),
+            'amountExceedsRemaining' => $amountExceedsRemaining,
         ])->title(__('Treatments'));
     }
 
