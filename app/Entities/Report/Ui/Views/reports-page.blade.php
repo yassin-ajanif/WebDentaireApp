@@ -5,28 +5,30 @@
     </div>
 
     <div class="app-card mb-6 p-4 shadow-sm">
-        <div class="flex flex-wrap items-center gap-2">
-            <button type="button" wire:click="setRange('today')"
-                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'today' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
-                {{ __('Today') }}
-            </button>
-            <button type="button" wire:click="setRange('last7')"
-                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'last7' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
-                {{ __('Last 7 days') }}
-            </button>
-            <button type="button" wire:click="setRange('month')"
-                class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'month' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
-                {{ __('This month') }}
-            </button>
-        </div>
-        <div class="mt-4 flex flex-wrap items-end gap-3">
-            <div>
-                <label for="fromDate" class="mb-1 block text-xs app-text-gray">{{ __('From') }}</label>
-                <input id="fromDate" type="date" wire:model.live="fromDate" class="app-input px-3 py-2 text-sm shadow-sm" />
+        <div class="flex flex-wrap items-end gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" wire:click="setRange('today')"
+                    class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'today' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
+                    {{ __('Today') }}
+                </button>
+                <button type="button" wire:click="setRange('last7')"
+                    class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'last7' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
+                    {{ __('Last 7 days') }}
+                </button>
+                <button type="button" wire:click="setRange('month')"
+                    class="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium {{ $activePreset === 'month' ? 'app-btn-primary border-transparent' : 'app-btn-secondary' }}">
+                    {{ __('This month') }}
+                </button>
             </div>
-            <div>
-                <label for="toDate" class="mb-1 block text-xs app-text-gray">{{ __('To') }}</label>
-                <input id="toDate" type="date" wire:model.live="toDate" class="app-input px-3 py-2 text-sm shadow-sm" />
+            <div class="flex flex-wrap items-end gap-3">
+                <div>
+                    <label for="fromDate" class="mb-1 block text-xs app-text-gray">{{ __('From') }}</label>
+                    <input id="fromDate" type="date" wire:model.live="fromDate" class="app-input px-3 py-2 text-sm shadow-sm" />
+                </div>
+                <div>
+                    <label for="toDate" class="mb-1 block text-xs app-text-gray">{{ __('To') }}</label>
+                    <input id="toDate" type="date" wire:model.live="toDate" class="app-input px-3 py-2 text-sm shadow-sm" />
+                </div>
             </div>
         </div>
         <div class="mt-3 app-text-gray text-sm">
