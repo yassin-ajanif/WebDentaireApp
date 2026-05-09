@@ -26,8 +26,8 @@
                     {{ __('File d\'attente') }}
                 </a>
                 <a href="{{ route('patients.index') }}"
-                   class="inline-block border-b-2 pb-1 transition-colors {{ request()->routeIs('patients.*') ? 'app-title' : 'border-transparent app-text-gray hover:app-title' }}"
-                   @if(request()->routeIs('patients.*')) style="border-color: var(--color-raw-primary-blue);" @endif>
+                   class="inline-block border-b-2 pb-1 transition-colors {{ request()->routeIs('patients.index') ? 'app-title' : 'border-transparent app-text-gray hover:app-title' }}"
+                   @if(request()->routeIs('patients.index')) style="border-color: var(--color-raw-primary-blue);" @endif>
                     {{ __('Liste des patients') }}
                 </a>
                 <a href="{{ route('queue.timeline') }}"

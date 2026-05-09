@@ -1,14 +1,27 @@
 <div class="pl-0 pr-3 sm:pr-4">
-    <h1 class="app-title mb-2 text-2xl font-semibold">{{ __('Queue timing') }}</h1>
-    <p class="app-subtitle mb-6 text-sm">{{ __('Average consultation length used for queue estimates.') }}</p>
+    <h1 class="app-title mb-6 text-2xl font-semibold">{{ __('Settings') }}</h1>
 
-    <form wire:submit="save" class="app-card max-w-md space-y-4 p-6 shadow-sm">
-        <div>
-            <label class="app-text-gray block text-sm font-medium">{{ __('Average consultation (minutes)') }}</label>
-            <input type="number" min="1" max="480" wire:model="average_consultation_minutes"
-                   class="app-input mt-1 block w-full px-3 py-2 text-sm shadow-sm" />
-            @error('average_consultation_minutes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    <div class="max-w-md space-y-6">
+        <div class="app-card p-6 shadow-sm">
+            <h2 class="app-title mb-1 text-lg font-medium">{{ __('Queue timing') }}</h2>
+            <p class="app-subtitle mb-4 text-sm">{{ __('Average consultation length used for queue estimates.') }}</p>
+            <form wire:submit="save" class="space-y-4">
+                <div>
+                    <label class="app-text-gray block text-sm font-medium">{{ __('Average consultation (minutes)') }}</label>
+                    <input type="number" min="1" max="480" wire:model="average_consultation_minutes"
+                           class="app-input mt-1 block w-full px-3 py-2 text-sm shadow-sm" />
+                    @error('average_consultation_minutes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium">{{ __('Save') }}</button>
+            </form>
         </div>
-        <button type="submit" class="app-btn-primary px-4 py-2 text-sm font-medium">{{ __('Save') }}</button>
-    </form>
+
+        <div class="app-card p-6 shadow-sm">
+            <h2 class="app-title mb-1 text-lg font-medium">{{ __('Trash') }}</h2>
+            <p class="app-subtitle mb-4 text-sm">{{ __('View and restore deleted patients.') }}</p>
+            <a href="{{ route('patients.trash') }}" class="app-btn-primary inline-flex items-center justify-center px-4 py-2 text-sm font-medium">
+                {{ __('Deleted patients') }}
+            </a>
+        </div>
+    </div>
 </div>

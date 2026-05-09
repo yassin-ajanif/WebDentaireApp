@@ -101,4 +101,27 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
             Patient::query()->whereKey($id)->delete();
         });
     }
+
+    public function restore(int $id): void
+    {
+        $patient = Patient::withTrashed()->findOrFail($id);
+        $patient->restore();
+    }
+
+    public function paginateTrashed(?string $search, int $perPage = 15): LengthAwarePaginator
+    {
+        $q = Patient::onlyTrashed()->orderByDesc('deleted_at');
+
+        if ($search !== null && $search !== '') {
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $like = '%'.mb_strtolower($escaped).'%';
+            $q->where(function ($inner) use ($like) {
+                $inner->whereRaw('LOWER(first_name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(last_name) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(telephone) LIKE ?', [$like]);
+            });
+        }
+
+        return $q->paginate($perPage);
+    }
 }

@@ -18,4 +18,8 @@ interface PatientServiceInterface
     public function update(int $id, array $data): Patient;
 
     public function delete(int $id): void;
+
+    public function restore(int $id): void;
+
+    public function paginateTrashed(?string $search, int $perPage = 15): LengthAwarePaginator;
 }

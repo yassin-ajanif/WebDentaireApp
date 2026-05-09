@@ -6,9 +6,11 @@ use App\Entities\Appointment\Models\Appointment;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'first_name',
         'last_name',
