@@ -108,6 +108,11 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
         $patient->restore();
     }
 
+    public function all(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Patient::query()->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'telephone']);
+    }
+
     public function paginateTrashed(?string $search, int $perPage = 15): LengthAwarePaginator
     {
         $q = Patient::onlyTrashed()->orderByDesc('deleted_at');

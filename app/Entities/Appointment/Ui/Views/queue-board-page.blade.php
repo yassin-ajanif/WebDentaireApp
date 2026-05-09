@@ -1,4 +1,16 @@
 <div class="pb-8 pl-0 pr-3 pt-2 sm:pr-4">
+    <style>.qp-drop{display:none;position:absolute;z-index:9999;margin-top:2px;width:100%;border-radius:6px;border:1px solid #d1d5db;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto}.qp-drop.show{display:block}.qp-item{cursor:pointer;padding:6px 10px;font-size:13px;color:#374151}.qp-item:hover,.qp-item.highlighted{background:#eff6ff;color:#1e3a8a}.qp-item small{color:#9ca3af;margin-left:6px}</style>
+    <script>
+        window.__patientsList = @json($allPatients);
+        function qpItems(input){var q=(input.value||'').toLowerCase().trim();if(!q)return[];return(window.__patientsList||[]).filter(function(p){return p.first_name.toLowerCase().includes(q)||(p.last_name||'').toLowerCase().includes(q)||p.telephone.includes(q)})}
+        function qpRender(input){var d=document.getElementById('qp-dropdown');if(!d)return;var items=qpItems(input);if(!items.length){d.classList.remove('show');d._idx=-1;return;}d.innerHTML='';d._idx=-1;items.forEach(function(p,i){var el=document.createElement('div');el.className='qp-item';el.innerHTML=(p.first_name+' '+(p.last_name||'')).trim()+' <small>'+p.telephone+'</small>';el.dataset.idx=i;el.addEventListener('mousedown',function(e){e.preventDefault();qpPick(input,p)});d.appendChild(el)});d.classList.add('show')}
+        function qpPick(input,p){input.value=(p.first_name+' '+(p.last_name||'')).trim();input.dispatchEvent(new Event('input',{bubbles:true}));var tel=document.querySelector('[wire\\:model="newTelephone"]');if(tel){tel.value=p.telephone;tel.dispatchEvent(new Event('input',{bubbles:true}))}qpClose()}
+        function qpClose(){var d=document.getElementById('qp-dropdown');if(d)d.classList.remove('show')}
+        function qpKey(ev,input){var d=document.getElementById('qp-dropdown');if(!d)return;if(ev.key==='ArrowDown'){ev.preventDefault();qpNav(d,1)}else if(ev.key==='ArrowUp'){ev.preventDefault();qpNav(d,-1)}else if(ev.key==='Enter'&&d.classList.contains('show')){ev.preventDefault();qpSel(input,d)}else if(ev.key==='Escape'){d.classList.remove('show')}}
+        function qpNav(d,dir){var items=d.querySelectorAll('.qp-item');if(!items.length)return;items.forEach(function(el){el.classList.remove('highlighted')});if(d._idx==null)d._idx=-1;d._idx=(d._idx+dir+items.length)%items.length;items[d._idx].classList.add('highlighted');items[d._idx].scrollIntoView({block:'nearest'})}
+        function qpSel(input,d){var items=d.querySelectorAll('.qp-item');if(d._idx>=0&&items[d._idx]){var a=qpItems(input);var idx=parseInt(items[d._idx].dataset.idx);if(a[idx])qpPick(input,a[idx])}}
+        function qpBlur(){setTimeout(qpClose,200)}
+    </script>
     @php
         $queuePositionById = $items->values()->mapWithKeys(fn ($a, $i) => [$a->id => $i + 1]);
         $done = $items->where('status', \App\Entities\Appointment\Enums\AppointmentStatus::Done)->values();
@@ -37,11 +49,14 @@
             <div class="app-card w-full max-w-md bg-white/95 p-4 shadow-xl">
                 <div class="app-divider mb-3 border-b pb-2 text-sm font-semibold app-title">{{ __('Nouveau numéro') }}</div>
                 <form wire:submit="saveNewDialog" class="space-y-3">
-                    <div class="grid grid-cols-[90px_1fr] items-center gap-2">
-                        <label class="app-text-gray text-sm">{{ __('Nom') }}</label>
-                        <div>
-                            <input type="text" wire:model="newName" class="app-input w-full px-2 py-1.5 text-sm">
+                    <div class="grid grid-cols-[90px_1fr] items-start gap-2">
+                        <label class="app-text-gray text-sm pt-1.5">{{ __('Nom') }}</label>
+                        <div class="relative">
+                            <input type="text" wire:model="newName" id="qp-name-input"
+                                   oninput="qpRender(this)" onkeydown="qpKey(event,this)" onblur="qpBlur()"
+                                   class="app-input w-full px-2 py-1.5 text-sm" autocomplete="off">
                             @error('newName') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            <div id="qp-dropdown" class="qp-drop"></div>
                         </div>
                     </div>
                     <div class="grid grid-cols-[90px_1fr] items-center gap-2">

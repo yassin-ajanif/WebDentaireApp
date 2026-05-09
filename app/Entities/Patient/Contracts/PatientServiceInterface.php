@@ -22,4 +22,7 @@ interface PatientServiceInterface
     public function restore(int $id): void;
 
     public function paginateTrashed(?string $search, int $perPage = 15): LengthAwarePaginator;
+
+    /** @return \Illuminate\Database\Eloquent\Collection<int, Patient> */
+    public function all(): \Illuminate\Database\Eloquent\Collection;
 }

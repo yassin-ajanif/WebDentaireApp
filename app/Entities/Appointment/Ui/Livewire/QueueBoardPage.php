@@ -177,6 +177,7 @@ class QueueBoardPage extends Component
         return view('appointment::queue-board-page', [
             'items' => $this->appointments()->listQueue(null),
             'estimateMinutes' => $this->prediction()->estimatedMinutesToClearQueue(),
+            'allPatients' => $this->patients()->all(),
         ])->title(__('Queue'));
     }
 }
