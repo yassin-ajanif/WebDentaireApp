@@ -46,6 +46,7 @@
                 <tr>
                     <th class="px-4 py-3">{{ __('Name') }}</th>
                     <th class="px-4 py-3">{{ __('Telephone') }}</th>
+                    <th class="px-4 py-3 text-end">{{ __('Dû (DH)') }}</th>
                     <th class="px-4 py-3 text-end">{{ __('Actions') }}</th>
                 </tr>
             </thead>
@@ -54,6 +55,14 @@
                     <tr wire:key="patient-{{ $patient->id }}" class="hover:bg-white/40">
                         <td class="app-title px-4 py-3 font-medium">{{ $patient->first_name }} {{ $patient->last_name }}</td>
                         <td class="app-text-gray px-4 py-3">{{ $patient->telephone }}</td>
+                        <td class="px-4 py-3 text-right text-sm">
+                            @php $owed = $owedMap[$patient->id] ?? 0 @endphp
+                            @if($owed > 0)
+                                <span style="color: #dc2626;">{{ number_format($owed, 2, '.', '') }}</span>
+                            @else
+                                <span class="app-text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-right text-sm">
                             <a href="{{ route('patients.edit', $patient) }}" class="app-title hover:underline">{{ __('Edit') }}</a>
                             <span class="app-text-muted">|</span>
@@ -65,7 +74,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="app-text-muted px-4 py-8 text-center">{{ __('No patients found.') }}</td>
+                        <td colspan="4" class="app-text-muted px-4 py-8 text-center">{{ __('No patients found.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

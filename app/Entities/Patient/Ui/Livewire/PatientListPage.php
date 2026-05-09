@@ -43,11 +43,16 @@ class PatientListPage extends Component
 
     public function render()
     {
+        $rows = $this->patients()->paginate(
+            $this->search !== '' ? $this->search : null,
+            $this->paymentFilter
+        );
+
+        $owedMap = $this->patients()->owedAmountsForPatients($rows->pluck('id')->toArray());
+
         return view('patient::patient-list-page', [
-            'rows' => $this->patients()->paginate(
-                $this->search !== '' ? $this->search : null,
-                $this->paymentFilter
-            ),
+            'rows' => $rows,
+            'owedMap' => $owedMap,
         ])->title(__('Patients'));
     }
 }

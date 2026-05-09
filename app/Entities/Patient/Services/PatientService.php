@@ -108,6 +108,27 @@ class PatientService implements PatientLookupInterface, PatientServiceInterface
         $patient->restore();
     }
 
+    public function owedAmountsForPatients(array $patientIds): array
+    {
+        if (empty($patientIds)) {
+            return [];
+        }
+
+        $totals = DB::table('treatment_infos')
+            ->whereIn('patient_id', $patientIds)
+            ->where('status', '!=', 'cancelled')
+            ->select('patient_id', DB::raw('SUM(remaining_amount) as total_due'))
+            ->groupBy('patient_id')
+            ->pluck('total_due', 'patient_id');
+
+        $result = [];
+        foreach ($patientIds as $id) {
+            $result[$id] = (float) ($totals[$id] ?? 0);
+        }
+
+        return $result;
+    }
+
     public function all(): \Illuminate\Database\Eloquent\Collection
     {
         return Patient::query()->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'telephone']);

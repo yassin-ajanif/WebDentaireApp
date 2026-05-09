@@ -25,4 +25,7 @@ interface PatientServiceInterface
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, Patient> */
     public function all(): \Illuminate\Database\Eloquent\Collection;
+
+    /** @param int[] $patientIds @return array<int, float> */
+    public function owedAmountsForPatients(array $patientIds): array;
 }
