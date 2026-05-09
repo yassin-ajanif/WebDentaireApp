@@ -1,7 +1,7 @@
 <div class="pl-0 pr-3 sm:pr-4">
     <h1 class="app-title mb-6 text-2xl font-semibold">{{ __('Settings') }}</h1>
 
-    <div class="max-w-md space-y-6">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div class="app-card p-6 shadow-sm">
             <h2 class="app-title mb-1 text-lg font-medium">{{ __('Queue timing') }}</h2>
             <p class="app-subtitle mb-4 text-sm">{{ __('Average consultation length used for queue estimates.') }}</p>
