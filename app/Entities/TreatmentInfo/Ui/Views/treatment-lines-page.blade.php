@@ -140,7 +140,7 @@
                             <button
                                 type="button"
                                 wire:click="cancelTreatment({{ $treatment->id }})"
-                                wire:confirm="{{ __('Annuler ce traitement ?') }}"
+                                wire:confirm="{{ __('This will cancel the treatment and refund all payments made on it. Continue?') }}"
                                 class="inline-flex items-center justify-center rounded-md hover:bg-white/15"
                                 style="width: 21px; height: 21px;"
                                 title="{{ __('Annuler') }}"
@@ -228,10 +228,10 @@
                                             </td>
                                             <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">{{ number_format((float) $session->received_payment, 2, '.', '') }} DH</td>
                                             <td class="px-4 py-3 text-right">
-                                                @if($session->status !== 'cancelled')
+                                                @if($session->status !== 'cancelled' && !$isCancelled)
                                                     <button type="button" wire:click="startEditSession({{ $treatment->id }}, {{ $session->id }})" class="app-title hover:underline">{{ __('Edit') }}</button>
                                                     <span class="app-text-muted">|</span>
-                                                    <button type="button" wire:click="cancelSession({{ $session->id }})" wire:confirm="{{ __('Cancel this session payment?') }}" class="text-red-600 hover:underline">{{ __('Cancel') }}</button>
+                                                    <button type="button" wire:click="cancelSession({{ $session->id }})" wire:confirm="{{ __('This will reverse this session payment. Continue?') }}" class="text-red-600 hover:underline">{{ __('Cancel') }}</button>
                                                 @else
                                                     <span class="text-xs app-text-muted italic">{{ __('No actions available') }}</span>
                                                 @endif
