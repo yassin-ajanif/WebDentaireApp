@@ -234,10 +234,14 @@ class TreatmentLinesPage extends Component
     {
         $payload = $this->sessionForms[$treatmentId] ?? [];
         $validated = Validator::make($payload, [
-            'session_date' => ['required', 'date'],
+            'session_date' => ['nullable', 'date'],
             'received_payment' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
+
+        if ($this->editingSessionId === null || $this->editingSessionTreatmentId !== $treatmentId) {
+            $validated['session_date'] = now();
+        }
 
         if ($this->editingSessionId !== null && $this->editingSessionTreatmentId === $treatmentId) {
             $this->validate([

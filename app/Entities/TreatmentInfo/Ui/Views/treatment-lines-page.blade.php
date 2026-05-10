@@ -248,10 +248,12 @@
 
                         @if($activeSessionFormTreatmentId === $treatment->id && !$isCancelled)
                             <form wire:submit.prevent="saveSession({{ $treatment->id }})" class="flex flex-wrap items-end gap-3">
+                                @if($editingSessionId && $editingSessionTreatmentId === $treatment->id)
                                 <div class="min-w-[220px] flex-1">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Date') }}</label>
                                     <input type="datetime-local" wire:model="sessionForms.{{ $treatment->id }}.session_date" class="app-input mt-1 block w-full px-3 py-2 text-sm" value="{{ $form['session_date'] }}" />
                                 </div>
+                                @endif
                                 <div class="min-w-[140px] w-[180px]">
                                     <label class="app-text-gray block text-sm font-medium">{{ __('Reçu') }}</label>
                                     <input type="text" wire:model="sessionForms.{{ $treatment->id }}.received_payment" class="app-input mt-1 block w-full px-3 py-2 text-sm" />
