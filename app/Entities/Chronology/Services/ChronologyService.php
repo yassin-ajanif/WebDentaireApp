@@ -16,6 +16,10 @@ class ChronologyService implements ChronologyServiceInterface
         return DB::table('treatment_sessions as ts')
             ->join('treatment_infos as ti', 'ti.id', '=', 'ts.treatment_info_id')
             ->join('patients as p', 'p.id', '=', 'ti.patient_id')
+            ->leftJoin('appointments as a', function ($join) use ($targetDay) {
+                $join->on('a.patient_id', '=', 'p.id')
+                    ->whereDate('a.started_at', $targetDay->toDateString());
+            })
             ->where('ts.status', '!=', 'cancelled')
             ->where('ti.status', '!=', 'cancelled')
             ->whereDate('ts.created_at', $targetDay->toDateString())
@@ -23,8 +27,8 @@ class ChronologyService implements ChronologyServiceInterface
                 'ti.patient_id',
                 'p.first_name',
                 'p.last_name',
-                DB::raw('MIN(ts.created_at) as started_at'),
-                DB::raw('MAX(ts.created_at) as completed_at'),
+                DB::raw('MIN(COALESCE(a.started_at, ts.created_at)) as started_at'),
+                DB::raw('MAX(COALESCE(a.completed_at, ts.created_at)) as completed_at'),
                 DB::raw('SUM(ts.received_payment) as received_total'),
                 DB::raw('MAX(ti.id) as latest_treatment_info_id'),
             ])
