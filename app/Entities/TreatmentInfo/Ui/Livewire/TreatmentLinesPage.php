@@ -13,7 +13,6 @@ use App\Entities\TreatmentInfo\Models\Session;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use DomainException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -232,12 +231,13 @@ class TreatmentLinesPage extends Component
 
     public function saveSession(int $treatmentId): void
     {
-        $payload = $this->sessionForms[$treatmentId] ?? [];
-        $validated = Validator::make($payload, [
-            'session_date' => ['nullable', 'date'],
-            'received_payment' => ['required', 'numeric', 'min:0'],
-            'notes' => ['nullable', 'string', 'max:2000'],
-        ])->validate();
+        $this->validate([
+            "sessionForms.$treatmentId.session_date" => ['nullable', 'date'],
+            "sessionForms.$treatmentId.received_payment" => ['required', 'numeric', 'min:0'],
+            "sessionForms.$treatmentId.notes" => ['required', 'string', 'max:2000'],
+        ]);
+
+        $validated = $this->sessionForms[$treatmentId];
 
         if ($this->editingSessionId === null || $this->editingSessionTreatmentId !== $treatmentId) {
             $validated['session_date'] = now();

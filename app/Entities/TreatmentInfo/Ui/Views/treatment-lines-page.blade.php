@@ -267,6 +267,7 @@
                                            oninput="snRender(this)" onkeydown="snKey(event,this)" onblur="snBlur(this)"
                                            class="app-input mt-1 block w-full px-3 py-2 text-sm" autocomplete="off" />
                                     <div id="session-notes-dropdown-{{ $treatment->id }}" class="ac-dropdown"></div>
+                                    @error('sessionForms.' . $treatment->id . '.notes') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 @if($editingSessionId && $editingSessionTreatmentId === $treatment->id)
                                     <div class="min-w-[260px] flex-[2]">
