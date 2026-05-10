@@ -15,6 +15,12 @@ class TreatmentAppointmentFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+    }
+
     public function test_treatment_page_shows_finish_button_for_in_progress_appointment(): void
     {
         $patient = Patient::query()->create([

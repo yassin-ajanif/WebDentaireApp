@@ -2,7 +2,7 @@
 
 namespace App\Entities\TreatmentInfo\Models;
 
-use App\Models\User;
+use App\Entities\Auth\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

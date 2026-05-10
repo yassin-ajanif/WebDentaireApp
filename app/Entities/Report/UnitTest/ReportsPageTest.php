@@ -13,6 +13,12 @@ class ReportsPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+    }
+
     public function test_reports_page_loads(): void
     {
         $this->get('/reports')

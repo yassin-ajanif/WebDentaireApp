@@ -13,6 +13,11 @@ use Tests\TestCase;
 
 class AppointmentTimelinePageTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+    }
     use RefreshDatabase;
 
     public function test_timeline_page_loads(): void

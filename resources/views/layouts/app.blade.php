@@ -42,6 +42,13 @@
                 </a>
             </nav>
             <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+                @auth
+                <span class="app-text-gray text-sm">{{ auth()->user()->name }}</span>
+                <form method="POST" action="{{ route('auth.logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="app-text-gray text-sm hover:underline">{{ __('Logout') }}</button>
+                </form>
+                @endauth
                 <a href="{{ route('locale.switch', ['locale' => app()->getLocale() === 'ar' ? 'fr' : 'ar']) }}"
                    class="app-input inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium no-underline app-text-gray hover:app-title hover:bg-white/90"
                    aria-label="{{ app()->getLocale() === 'ar' ? __('Switch to French') : __('Switch to Arabic') }}">

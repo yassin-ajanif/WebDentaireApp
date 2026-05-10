@@ -67,6 +67,8 @@ return [
 
     'timezone' => 'Africa/Casablanca',
 
+    'recovery_code' => env('APP_RECOVERY_CODE'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

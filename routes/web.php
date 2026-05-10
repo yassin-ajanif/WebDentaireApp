@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/queue');
+Route::redirect('/', '/queue')->middleware('auth');
 
 Route::get('/locale/{locale}', function (string $locale) {
     if (! in_array($locale, ['fr', 'ar'], true)) {
