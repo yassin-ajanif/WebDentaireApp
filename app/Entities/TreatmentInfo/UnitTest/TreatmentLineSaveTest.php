@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\TreatmentInfo;
+namespace App\Entities\TreatmentInfo\UnitTest;
 
 use App\Entities\Patient\Models\Patient;
 use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;

@@ -29,7 +29,11 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "App\\Entities\\Appointment\\UnitTest\\": "app/Entities/Appointment/UnitTest/",
+            "App\\Entities\\Patient\\UnitTest\\": "app/Entities/Patient/UnitTest/",
+            "App\\Entities\\TreatmentInfo\\UnitTest\\": "app/Entities/TreatmentInfo/UnitTest/",
+            "App\\Entities\\Report\\UnitTest\\": "app/Entities/Report/UnitTest/"
         }
     },
     "scripts": {

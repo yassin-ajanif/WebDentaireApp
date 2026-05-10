@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Patient;
+namespace App\Entities\Patient\UnitTest;
 
 use App\Entities\Patient\Contracts\PatientServiceInterface;
 use App\Entities\Patient\Models\Patient;

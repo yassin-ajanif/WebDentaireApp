@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\TreatmentInfo;
+namespace App\Entities\TreatmentInfo\UnitTest;
 
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Appointment\Models\Appointment;

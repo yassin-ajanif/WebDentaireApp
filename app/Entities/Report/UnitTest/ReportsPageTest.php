@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Report;
+namespace App\Entities\Report\UnitTest;
 
 use App\Entities\Patient\Models\Patient;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;

@@ -11,6 +11,18 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="Appointment">
+            <directory>app/Entities/Appointment/UnitTest</directory>
+        </testsuite>
+        <testsuite name="Patient">
+            <directory>app/Entities/Patient/UnitTest</directory>
+        </testsuite>
+        <testsuite name="TreatmentInfo">
+            <directory>app/Entities/TreatmentInfo/UnitTest</directory>
+        </testsuite>
+        <testsuite name="Report">
+            <directory>app/Entities/Report/UnitTest</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
