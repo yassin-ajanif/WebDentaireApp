@@ -39,8 +39,8 @@ class PatientFormPage extends Component
     {
         $this->validate([
             'first_name' => ['required', 'string', 'max:120'],
-            'last_name' => ['required', 'string', 'max:120'],
-            'telephone' => ['required', 'string', 'max:40'],
+            'last_name' => ['nullable', 'string', 'max:120'],
+            'telephone' => ['required', 'string', 'max:40', 'regex:/^0[1-9]\d{8}$/'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
