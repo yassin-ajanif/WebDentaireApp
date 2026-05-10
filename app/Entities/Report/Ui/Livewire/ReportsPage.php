@@ -14,6 +14,11 @@ class ReportsPage extends Component
 
     public string $toDate = '';
 
+    public function boot(): void
+    {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+    }
+
     public function mount(): void
     {
         $today = Carbon::today()->toDateString();

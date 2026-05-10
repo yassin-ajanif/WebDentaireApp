@@ -25,6 +25,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
     protected function casts(): array
     {
         return [

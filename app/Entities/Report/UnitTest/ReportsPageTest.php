@@ -16,7 +16,7 @@ class ReportsPageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create(['role' => 'admin']));
     }
 
     public function test_reports_page_loads(): void
