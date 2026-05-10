@@ -115,7 +115,7 @@ class QueueBoardPage extends Component
             'newName' => ['required', 'string', 'max:120'],
             'newAge' => ['nullable', 'integer', 'min:0', 'max:120'],
             'newAddress' => ['nullable', 'string', 'max:255'],
-            'newTelephone' => ['required', 'string', 'max:40'],
+            'newTelephone' => ['required', 'string', 'max:40', 'regex:/^0[1-9]\d{8}$/'],
         ]);
 
         $telephone = trim($this->newTelephone);
