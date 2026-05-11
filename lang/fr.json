@@ -216,5 +216,14 @@
     "No activities yet.": "Aucune activité pour le moment.",
     "Delete this activity?": "Supprimer cette activité ?",
     "Delete this treatment and all its activities?": "Supprimer ce traitement et toutes ses activités ?",
-    "activities": "activités"
+    "activities": "activités",
+    "Backup": "Sauvegarde",
+    "Storage location": "Emplacement de stockage",
+    "Browse": "Parcourir",
+    "Create backup": "Créer une sauvegarde",
+    "Backup created": "Sauvegarde créée",
+    "Please use Chrome or Edge to browse folders.": "Veuillez utiliser Chrome ou Edge pour parcourir les dossiers.",
+    "Create a manual database backup.": "Créer une sauvegarde manuelle de la base de données.",
+    "PostgreSQL bin path (optional)": "Chemin PostgreSQL bin (optionnel)",
+    "Backup destination folder": "Dossier de destination de la sauvegarde"
 }

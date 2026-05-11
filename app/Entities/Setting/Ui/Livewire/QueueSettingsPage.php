@@ -3,6 +3,7 @@
 namespace App\Entities\Setting\Ui\Livewire;
 
 use App\Entities\Setting\Contracts\QueueSettingsServiceInterface;
+use App\Services\BackupService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -11,9 +12,14 @@ class QueueSettingsPage extends Component
 {
     public int $average_consultation_minutes = 20;
 
+    public string $backupPath = '';
+    public string $pgBinDir = '';
+
     public function mount(): void
     {
         $this->average_consultation_minutes = $this->settings()->getQueuePredictionConfig()['average_consultation_minutes'];
+        $this->backupPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
+        $this->pgBinDir = env('PG_DUMP_PATH', '');
     }
 
     public function save(): void
@@ -27,6 +33,20 @@ class QueueSettingsPage extends Component
         ]);
 
         session()->flash('status', __('Settings saved.'));
+    }
+
+    public function createBackup(): void
+    {
+        $this->validate([
+            'backupPath' => ['required', 'string'],
+        ]);
+
+        try {
+            $path = app(BackupService::class)->create($this->backupPath, $this->pgBinDir ?: null);
+            session()->flash('status', __('Backup created') . ': ' . basename($path));
+        } catch (\RuntimeException $e) {
+            session()->flash('error', $e->getMessage());
+        }
     }
 
     public function render()
