@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div class="mt-6 grid gap-6 sm:grid-cols-2">
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         <div class="app-card p-6 shadow-sm">
             <h2 class="app-title mb-1 text-lg font-medium">{{ __('Manual backup') }}</h2>
             <p class="app-subtitle mb-4 text-sm">{{ __('Create a manual database backup.') }}</p>
@@ -87,6 +87,33 @@
                 <button type="button" wire:click="saveAutoBackup"
                         class="app-btn-primary inline-flex items-center justify-center px-4 py-2 text-sm font-medium">
                     {{ __('Save') }}
+                </button>
+            </div>
+        </div>
+
+        <div class="app-card p-6 shadow-sm sm:col-span-2 xl:col-span-1">
+            <h2 class="app-title mb-1 text-lg font-medium">{{ __('Restore') }}</h2>
+            <p class="app-subtitle mb-4 text-sm">{{ __('Restore a previously taken backup.') }}</p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="app-text-gray block text-xs font-medium">{{ __('Backup file') }}</label>
+                    <select wire:model="restoreFile"
+                            class="app-input mt-1 block w-full px-3 py-2 text-sm shadow-sm">
+                        <option value="">{{ __('Select a backup...') }}</option>
+                        @foreach($this->backupFiles as $file)
+                            <option value="{{ $file['path'] }}">{{ $file['name'] }} ({{ number_format($file['size'] / 1024, 1) }} KB)</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700">
+                    ⚠ {{ __('All current data will be overwritten. This cannot be undone.') }}
+                </div>
+
+                <button type="button" wire:click="restoreBackup"
+                        class="inline-flex w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                    {{ __('Restore backup') }}
                 </button>
             </div>
         </div>

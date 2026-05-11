@@ -23,6 +23,8 @@ class QueueSettingsPage extends Component
     public string $backupMessage = '';
     public bool $backupSuccess = false;
 
+    public string $restoreFile = '';
+
     public function mount(): void
     {
         $this->average_consultation_minutes = $this->settings()->getQueuePredictionConfig()['average_consultation_minutes'];
@@ -92,6 +94,29 @@ class QueueSettingsPage extends Component
             $this->backupMessage = $e->getMessage();
             $this->backupSuccess = false;
         }
+    }
+
+    public function restoreBackup(): void
+    {
+        if (!$this->restoreFile) {
+            $this->backupMessage = __('Please select a backup file.');
+            $this->backupSuccess = false;
+            return;
+        }
+
+        try {
+            app(BackupService::class)->restore($this->restoreFile, $this->pgBinDir ?: null);
+            $this->backupMessage = __('Database restored successfully.');
+            $this->backupSuccess = true;
+        } catch (\RuntimeException $e) {
+            $this->backupMessage = $e->getMessage();
+            $this->backupSuccess = false;
+        }
+    }
+
+    public function getBackupFilesProperty(): array
+    {
+        return app(BackupService::class)->listBackups($this->backupPath);
     }
 
     public function getIntervalOptionsProperty(): array
