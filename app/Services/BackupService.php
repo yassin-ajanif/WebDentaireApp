@@ -24,7 +24,7 @@ class BackupService
 
         $command = sprintf(
             '%s --host=%s --port=%s --username=%s --no-password --format=c --file=%s %s 2>&1',
-            $pgDump,
+            escapeshellarg($pgDump),
             escapeshellarg($db['host']),
             escapeshellarg($db['port']),
             escapeshellarg($db['username']),
@@ -55,7 +55,7 @@ class BackupService
 
         $command = sprintf(
             '%s --host=%s --port=%s --username=%s --no-password --clean --if-exists --dbname=%s %s 2>&1',
-            $pgRestore,
+            escapeshellarg($pgRestore),
             escapeshellarg($db['host']),
             escapeshellarg($db['port']),
             escapeshellarg($db['username']),
