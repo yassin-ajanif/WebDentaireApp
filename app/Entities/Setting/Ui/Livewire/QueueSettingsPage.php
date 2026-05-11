@@ -35,6 +35,9 @@ class QueueSettingsPage extends Component
         session()->flash('status', __('Settings saved.'));
     }
 
+    public string $backupMessage = '';
+    public bool $backupSuccess = false;
+
     public function createBackup(): void
     {
         $this->validate([
@@ -43,9 +46,11 @@ class QueueSettingsPage extends Component
 
         try {
             $path = app(BackupService::class)->create($this->backupPath, $this->pgBinDir ?: null);
-            session()->flash('status', __('Backup created') . ': ' . basename($path));
+            $this->backupMessage = __('Backup created') . ': ' . basename($path);
+            $this->backupSuccess = true;
         } catch (\RuntimeException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->backupMessage = $e->getMessage();
+            $this->backupSuccess = false;
         }
     }
 

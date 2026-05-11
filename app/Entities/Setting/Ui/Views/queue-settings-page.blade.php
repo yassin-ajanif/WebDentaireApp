@@ -51,6 +51,14 @@
                         class="app-btn-primary inline-flex items-center justify-center px-4 py-2 text-sm font-medium">
                     {{ __('Create backup') }}
                 </button>
+
+                @if ($backupMessage)
+                    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
+                         class="rounded-md border px-3 py-2 text-sm"
+                         style="border-color: {{ $backupSuccess ? 'var(--color-accent-success)' : 'var(--color-accent-danger, #dc2626)' }}; color: {{ $backupSuccess ? 'var(--color-accent-success)' : 'var(--color-accent-danger, #dc2626)' }}; background-color: {{ $backupSuccess ? 'color-mix(in srgb, var(--color-accent-success) 12%, white)' : '#fef2f2' }}">
+                        {{ $backupMessage }}
+                    </div>
+                @endif
             </form>
         </div>
     </div>
