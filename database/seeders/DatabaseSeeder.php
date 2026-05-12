@@ -18,8 +18,15 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@espace-dentaire.ma',
-            'password' => bcrypt('admin123'),
+            'password' => bcrypt('admin1234'),
             'role' => 'admin',
+        ]);
+
+        User::factory()->create([
+            'name' => 'User',
+            'email' => 'user@user.ma',
+            'password' => bcrypt('0000'),
+            'role' => 'user',
         ]);
 
         $this->call(CatalogSeeder::class);

@@ -31,7 +31,7 @@ class ResetPasswordPage extends Component
         $this->validate([
             'recovery_code' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
         ]);
 
         $ok = $this->auth()->resetPasswordWithRecoveryCode(
