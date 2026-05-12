@@ -23,5 +23,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(CatalogSeeder::class);
+
+        // Large perf dataset (5000 patients, 200k appointments, …) — run only when needed:
+        // php artisan db:seed --class=PerformanceTestDataSeeder
     }
 }
