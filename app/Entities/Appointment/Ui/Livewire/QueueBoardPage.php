@@ -14,6 +14,8 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class QueueBoardPage extends Component
 {
+    public string $search = '';
+
     public bool $showNewDialog = false;
 
     public string $newName = '';
@@ -185,8 +187,20 @@ class QueueBoardPage extends Component
 
     public function render()
     {
+        $items = $this->appointments()->listQueue(null);
+
+        if ($this->search !== '') {
+            $q = strtolower(trim($this->search));
+            $items = $items->filter(function ($appt) use ($q) {
+                $name = strtolower($appt->queueDisplayName());
+
+                return str_contains($name, $q)
+                    || str_contains($appt->patient->telephone ?? '', $q);
+            })->values();
+        }
+
         return view('appointment::queue-board-page', [
-            'items' => $this->appointments()->listQueue(null),
+            'items' => $items,
             'estimateMinutes' => $this->prediction()->estimatedMinutesToClearQueue(),
             'allPatients' => $this->patients()->all(),
         ])->title(__('Queue'));

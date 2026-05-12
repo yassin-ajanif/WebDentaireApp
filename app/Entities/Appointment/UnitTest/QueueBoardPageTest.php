@@ -96,14 +96,16 @@ class QueueBoardPageTest extends TestCase
             'telephone' => '0611000002',
             'notes' => null,
         ]);
-        Appointment::query()->create([
+        $todayAppointment = Appointment::query()->create([
             'patient_id' => $todayPatient->id,
             'status' => AppointmentStatus::Waiting,
         ]);
 
-        Livewire::test(QueueBoardPage::class)
-            ->assertSee('Aujourd')
-            ->assertDontSee('Hier');
+        $html = Livewire::test(QueueBoardPage::class)->html();
+
+        $this->assertStringContainsString('wire:key="active-'.$todayAppointment->id.'"', $html);
+        $this->assertStringNotContainsString('wire:key="active-'.$yesterdayAppt->id.'"', $html);
+        $this->assertStringContainsString('Aujourd', $html);
     }
 
     public function test_terminer_from_started_patient_redirects_to_treatments_page(): void
