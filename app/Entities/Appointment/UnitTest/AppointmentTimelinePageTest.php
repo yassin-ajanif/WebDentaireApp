@@ -4,6 +4,7 @@ namespace App\Entities\Appointment\UnitTest;
 
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Appointment\Models\Appointment;
+use App\Entities\Auth\Models\User;
 use App\Entities\Patient\Models\Patient;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use Carbon\Carbon;
@@ -16,8 +17,9 @@ class AppointmentTimelinePageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+        $this->actingAs(User::factory()->create());
     }
+
     use RefreshDatabase;
 
     public function test_timeline_page_loads(): void
@@ -32,7 +34,7 @@ class AppointmentTimelinePageTest extends TestCase
             ->assertSee('Patient')
             ->assertSee('Horaire')
             ->assertSee('Reçu (DH)')
-            ->assertSee('Total à remettre au médecin');
+            ->assertSee('Net à remettre au médecin');
     }
 
     public function test_timeline_binds_completed_appointments_data_in_hour_rows(): void
@@ -90,6 +92,54 @@ class AppointmentTimelinePageTest extends TestCase
             ->assertSee('treatment='.$treatment->id)
             ->assertSee('highlight_date=2026-05-07')
             ->assertDontSee('Salim Test');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_timeline_does_not_double_session_total_when_patient_has_multiple_appointments_same_day(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-10 12:00:00'));
+
+        $patient = Patient::query()->create([
+            'first_name' => 'Ahmed',
+            'last_name' => 'DoubleAppt',
+            'telephone' => '0611000999',
+            'notes' => null,
+        ]);
+
+        Appointment::query()->create([
+            'patient_id' => $patient->id,
+            'status' => AppointmentStatus::Done,
+            'started_at' => Carbon::parse('2026-05-10 09:00:00'),
+            'completed_at' => Carbon::parse('2026-05-10 09:30:00'),
+        ]);
+        Appointment::query()->create([
+            'patient_id' => $patient->id,
+            'status' => AppointmentStatus::Done,
+            'started_at' => Carbon::parse('2026-05-10 11:00:00'),
+            'completed_at' => Carbon::parse('2026-05-10 11:15:00'),
+        ]);
+
+        $treatment = TreatmentInfo::query()->create([
+            'patient_id' => $patient->id,
+            'description' => 'Consultation',
+            'global_price' => 500,
+            'remaining_amount' => 200,
+        ]);
+
+        DB::table('treatment_sessions')->insert([
+            'treatment_info_id' => $treatment->id,
+            'session_date' => Carbon::parse('2026-05-10 10:00:00'),
+            'received_payment' => 300,
+            'notes' => 'Paiement unique',
+            'created_at' => Carbon::parse('2026-05-10 10:05:00'),
+            'updated_at' => Carbon::parse('2026-05-10 10:05:00'),
+        ]);
+
+        $response = $this->get('/queue/timeline');
+        $response->assertOk();
+        $response->assertSee('300.00', false);
+        $response->assertDontSee('600.00', false);
 
         Carbon::setTestNow();
     }

@@ -4,10 +4,12 @@ namespace App\Entities\TreatmentInfo\UnitTest;
 
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Appointment\Models\Appointment;
+use App\Entities\Auth\Models\User;
 use App\Entities\Patient\Models\Patient;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use App\Entities\TreatmentInfo\Ui\Livewire\TreatmentLinesPage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -18,7 +20,7 @@ class TreatmentAppointmentFlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(\App\Entities\Auth\Models\User::factory()->create());
+        $this->actingAs(User::factory()->create());
     }
 
     public function test_treatment_page_shows_finish_button_for_in_progress_appointment(): void
@@ -44,7 +46,7 @@ class TreatmentAppointmentFlowTest extends TestCase
             ->assertSee(__('Terminer la consultation'));
     }
 
-    public function test_saving_session_marks_appointment_done_and_redirects_to_queue(): void
+    public function test_saving_session_then_finish_consultation_marks_appointment_done_and_redirects_to_queue(): void
     {
         $patient = Patient::query()->create([
             'first_name' => 'Salim',
@@ -74,7 +76,13 @@ class TreatmentAppointmentFlowTest extends TestCase
                 'received_payment' => '120.00',
                 'notes' => 'Paiement séance',
             ])
-            ->call('saveSession', $treatment->id)
+            ->call('saveSession', $treatment->id);
+
+        $this->assertSame(AppointmentStatus::InProgress, $appointment->fresh()->status);
+
+        Livewire::withQueryParams(['appointment' => $appointment->id])
+            ->test(TreatmentLinesPage::class, ['patient' => $patient->id])
+            ->call('finishAppointment')
             ->assertRedirect(route('queue.index'));
 
         $this->assertSame(AppointmentStatus::Done, $appointment->fresh()->status);
@@ -148,7 +156,7 @@ class TreatmentAppointmentFlowTest extends TestCase
             'remaining_amount' => 500,
         ]);
 
-        $sessionId = \Illuminate\Support\Facades\DB::table('treatment_sessions')->insertGetId([
+        $sessionId = DB::table('treatment_sessions')->insertGetId([
             'treatment_info_id' => $treatment->id,
             'session_date' => now()->subDay(),
             'received_payment' => 100,
@@ -181,7 +189,7 @@ class TreatmentAppointmentFlowTest extends TestCase
             'remaining_amount' => 800,
         ]);
 
-        \Illuminate\Support\Facades\DB::table('treatment_sessions')->insert([
+        DB::table('treatment_sessions')->insert([
             [
                 'treatment_info_id' => $treatment->id,
                 'session_date' => '2026-05-08 13:33:00',
