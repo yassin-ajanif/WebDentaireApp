@@ -23,6 +23,8 @@ class QueueSettingsPage extends Component
     public string $backupMessage = '';
     public bool $backupSuccess = false;
 
+    public string $backupPassword = '';
+
     public function mount(): void
     {
         $this->average_consultation_minutes = $this->settings()->getQueuePredictionConfig()['average_consultation_minutes'];
@@ -55,6 +57,10 @@ class QueueSettingsPage extends Component
 
     public function saveAutoBackup(): void
     {
+        if (!$this->assertBackupPassword()) {
+            return;
+        }
+
         $this->validate([
             'autoInterval' => ['required', 'integer', 'min:1'],
             'autoRetentionDays' => ['required', 'integer', 'min:1', 'max:365'],
@@ -76,10 +82,15 @@ class QueueSettingsPage extends Component
 
         $this->backupMessage = __('Auto backup settings saved.');
         $this->backupSuccess = true;
+        $this->reset('backupPassword');
     }
 
     public function createBackup(): void
     {
+        if (!$this->assertBackupPassword()) {
+            return;
+        }
+
         $this->validate([
             'backupPath' => ['required', 'string'],
         ]);
@@ -89,10 +100,17 @@ class QueueSettingsPage extends Component
             $this->persistBackupPathsToSettings();
             $this->backupMessage = __('Backup created') . ': ' . basename($path);
             $this->backupSuccess = true;
+            $this->reset('backupPassword');
         } catch (\RuntimeException $e) {
             $this->backupMessage = $e->getMessage();
             $this->backupSuccess = false;
+            $this->reset('backupPassword');
         }
+    }
+
+    public function getBackupPasswordRequiredProperty(): bool
+    {
+        return trim((string) config('backup.action_password', '')) !== '';
     }
 
     public function getIntervalOptionsProperty(): array
@@ -135,5 +153,28 @@ class QueueSettingsPage extends Component
                 ],
             ]
         );
+    }
+
+    private function assertBackupPassword(): bool
+    {
+        $expected = trim((string) config('backup.action_password', ''));
+        if ($expected === '') {
+            return true;
+        }
+
+        $this->validate([
+            'backupPassword' => ['required', 'string'],
+        ]);
+
+        $given = trim($this->backupPassword);
+        if (! hash_equals($expected, $given)) {
+            $this->reset('backupPassword');
+            $this->backupMessage = __('Incorrect backup password.');
+            $this->backupSuccess = false;
+
+            return false;
+        }
+
+        return true;
     }
 }

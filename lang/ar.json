@@ -231,6 +231,7 @@
     "Please use Chrome or Edge to browse folders.": "يرجى استخدام Chrome أو Edge لتصفح المجلدات.",
     "Create a manual database backup.": "إنشاء نسخة احتياطية يدوية لقاعدة البيانات.",
     "PostgreSQL bin path (optional)": "مسار PostgreSQL bin (اختياري)",
+    "PostgreSQL bin path": "مسار PostgreSQL bin",
     "Backup destination folder": "مجلد وجهة النسخ الاحتياطي",
     "Manual backup": "نسخ احتياطي يدوي",
     "Restore": "استعادة",
@@ -240,5 +241,11 @@
     "All current data will be overwritten. This cannot be undone.": "سيتم استبدال جميع البيانات الحالية. هذا الإجراء لا يمكن التراجع عنه.",
     "Restore backup": "استعادة النسخة الاحتياطية",
     "Please select a backup file.": "يرجى اختيار ملف النسخ الاحتياطي.",
-    "Database restored successfully.": "تمت استعادة قاعدة البيانات بنجاح."
+    "Database restored successfully.": "تمت استعادة قاعدة البيانات بنجاح.",
+    "Database backups": "نسخ احتياطي لقاعدة البيانات",
+    "Expand or collapse this section.": "انقر على العنوان لإظهار أو إخفاء هذا القسم.",
+    "Backup security": "أمان النسخ الاحتياطي",
+    "Enter the backup password to create a backup or save automatic backup settings. Required for every user.": "أدخل كلمة مرور النسخ الاحتياطي لإنشاء نسخة أو لحفظ إعدادات النسخ التلقائي. مطلوبة من جميع المستخدمين.",
+    "Backup password": "كلمة مرور النسخ الاحتياطي",
+    "Incorrect backup password.": "كلمة مرور النسخ الاحتياطي غير صحيحة."
 }

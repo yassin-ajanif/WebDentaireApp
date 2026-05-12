@@ -232,6 +232,7 @@
     "Please use Chrome or Edge to browse folders.": "Veuillez utiliser Chrome ou Edge pour parcourir les dossiers.",
     "Create a manual database backup.": "Créer une sauvegarde manuelle de la base de données.",
     "PostgreSQL bin path (optional)": "Chemin PostgreSQL bin (optionnel)",
+    "PostgreSQL bin path": "Chemin PostgreSQL bin",
     "Backup destination folder": "Dossier de destination de la sauvegarde",
     "Manual backup": "Sauvegarde manuelle",
     "Restore": "Restauration",
@@ -241,5 +242,11 @@
     "All current data will be overwritten. This cannot be undone.": "Toutes les données actuelles seront écrasées. Cette action est irréversible.",
     "Restore backup": "Restaurer la sauvegarde",
     "Please select a backup file.": "Veuillez sélectionner un fichier de sauvegarde.",
-    "Database restored successfully.": "Base de données restaurée avec succès."
+    "Database restored successfully.": "Base de données restaurée avec succès.",
+    "Database backups": "Sauvegardes de la base de données",
+    "Expand or collapse this section.": "Cliquez sur l'en-tête pour afficher ou masquer cette section.",
+    "Backup security": "Sécurité des sauvegardes",
+    "Enter the backup password to create a backup or save automatic backup settings. Required for every user.": "Saisissez le mot de passe des sauvegardes pour créer une sauvegarde ou enregistrer les paramètres de sauvegarde automatique. Obligatoire pour tous les utilisateurs.",
+    "Backup password": "Mot de passe des sauvegardes",
+    "Incorrect backup password.": "Mot de passe des sauvegardes incorrect."
 }
