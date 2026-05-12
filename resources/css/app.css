@@ -77,6 +77,64 @@
         color: var(--color-text-primary);
     }
 
+    .app-clinic-shell {
+        box-sizing: border-box;
+        display: flex;
+        flex: 1 1 0%;
+        flex-direction: column;
+        max-width: 100%;
+        min-height: 0;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .app-clinic-shell-header {
+        flex-shrink: 0;
+    }
+
+    .app-page-scroll {
+        flex: 1 1 0%;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in srgb, var(--color-raw-primary-blue) 55%, var(--color-raw-neutral-gray))
+            var(--color-background-app);
+    }
+
+    .app-page-scroll::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .app-page-scroll::-webkit-scrollbar-track {
+        background: color-mix(in srgb, var(--color-background-app) 40%, transparent);
+        border-radius: 9999px;
+        margin-block: 6px;
+    }
+
+    .app-page-scroll::-webkit-scrollbar-thumb {
+        background-color: color-mix(in srgb, var(--color-raw-primary-blue) 50%, var(--color-raw-neutral-gray));
+        border-radius: 9999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .app-page-scroll::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-raw-primary-blue);
+    }
+
+    .app-page-scroll::-webkit-scrollbar-button {
+        display: none;
+        height: 0;
+        width: 0;
+    }
+
+    .app-page-scroll::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
     @media (max-width: 768px) {
         .app-body-clinic {
             background-image: var(--app-bg-clinic-empty);
@@ -246,4 +304,29 @@
     .app-btn-secondary:hover {
         background-color: var(--color-background-card);
     }
+}
+
+/*
+ * Clinic shell: lock the document to the viewport and scroll only inside .app-page-scroll.
+ * Declared outside @layer so Tailwind base (e.g. html min-height) cannot re-enable page scroll.
+ * body is position:fixed so in-flow descendants cannot extend the document scroll height.
+ */
+html.app-html-clinic {
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+}
+
+body.app-body-clinic {
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }

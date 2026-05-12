@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html class="app-html-clinic" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,9 +16,9 @@
     @endif
     @livewireStyles
 </head>
-<body class="app-body-clinic min-h-screen antialiased">
-    <div class="app-clinic-main-shift w-full max-w-none py-6">
-        <header class="app-divider mb-8 flex flex-row flex-wrap items-center justify-between gap-4 border-b pb-4">
+<body class="app-body-clinic antialiased">
+    <div class="app-clinic-main-shift app-clinic-shell w-full max-w-none py-6">
+        <header class="app-clinic-shell-header app-divider mb-8 flex flex-row flex-wrap items-center justify-between gap-4 border-b pb-4">
             <nav class="flex flex-wrap items-end gap-8 text-sm font-medium" aria-label="{{ __('Main navigation') }}">
                 <a href="{{ route('queue.index') }}"
                    class="inline-block border-b-2 pb-1 transition-colors {{ request()->routeIs('queue.index') ? 'app-title' : 'border-transparent app-text-gray hover:app-title' }}"
@@ -67,7 +67,7 @@
                 </a>
             </div>
         </header>
-        <main class="w-full max-w-none px-0">
+        <main class="app-page-scroll w-full max-w-none px-0">
             @if (session('status'))
                 <div class="mb-4 rounded-md border py-3 pl-0 pr-3 text-sm sm:pr-4" style="border-color: var(--color-accent-success); color: var(--color-accent-success); background-color: color-mix(in srgb, var(--color-accent-success) 12%, white);" role="status">
                     {{ session('status') }}
