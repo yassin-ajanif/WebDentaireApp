@@ -5,7 +5,10 @@ namespace App\Entities\Appointment\UnitTest;
 use App\Entities\Appointment\Enums\AppointmentStatus;
 use App\Entities\Appointment\Models\Appointment;
 use App\Entities\Auth\Models\User;
+use App\Entities\Chronology\Contracts\ChronologyServiceInterface;
 use App\Entities\Patient\Models\Patient;
+use App\Entities\TreatmentInfo\Contracts\TreatmentInfoServiceInterface;
+use App\Entities\TreatmentInfo\Enums\TreatmentStatus;
 use App\Entities\TreatmentInfo\Models\TreatmentInfo;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,6 +143,97 @@ class AppointmentTimelinePageTest extends TestCase
         $response->assertOk();
         $response->assertSee('300.00', false);
         $response->assertDontSee('600.00', false);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_chronology_received_aggregate_includes_cancelled_session_amounts(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-05-20 10:00:00'));
+
+        $patient = Patient::query()->create([
+            'first_name' => 'Samir',
+            'last_name' => 'CancelSameDay',
+            'telephone' => '0611000888',
+            'notes' => null,
+        ]);
+
+        $treatment = TreatmentInfo::query()->create([
+            'patient_id' => $patient->id,
+            'description' => 'Détartrage supra-gingival',
+            'global_price' => 100,
+            'remaining_amount' => 70,
+        ]);
+
+        DB::table('treatment_sessions')->insert([
+            'treatment_info_id' => $treatment->id,
+            'session_date' => Carbon::parse('2026-05-20 00:22:00'),
+            'received_payment' => 30,
+            'notes' => 'Paiement',
+            'status' => 'cancelled',
+            'cancelled_at' => Carbon::parse('2026-05-20 00:25:00'),
+            'created_at' => Carbon::parse('2026-05-20 00:21:00'),
+            'updated_at' => Carbon::parse('2026-05-20 00:25:00'),
+        ]);
+
+        $chronology = app(ChronologyServiceInterface::class);
+        $day = \Illuminate\Support\Carbon::parse('2026-05-20');
+
+        $sessionRows = $chronology->getSessionsForDay($day);
+        $this->assertCount(1, $sessionRows);
+        $this->assertSame(30.0, (float) $sessionRows->first()->received_total);
+
+        $cancelledRows = $chronology->getCancelledSessionsForDay($day);
+        $this->assertCount(1, $cancelledRows);
+        $this->assertSame(30.0, (float) $cancelledRows->first()->refund_amount);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_chronology_received_includes_sessions_when_treatment_cancelled_same_day(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00'));
+
+        $patient = Patient::query()->create([
+            'first_name' => 'Lina',
+            'last_name' => 'TraitCancel',
+            'telephone' => '0611000777',
+            'notes' => null,
+        ]);
+
+        $treatment = TreatmentInfo::query()->create([
+            'patient_id' => $patient->id,
+            'description' => 'Bridge',
+            'global_price' => 200,
+            'remaining_amount' => 170,
+            'status' => TreatmentStatus::Unpaid,
+        ]);
+
+        DB::table('treatment_sessions')->insert([
+            'treatment_info_id' => $treatment->id,
+            'session_date' => Carbon::parse('2026-06-01 10:00:00'),
+            'received_payment' => 30,
+            'notes' => 'Acompte',
+            'status' => 'active',
+            'cancelled_at' => null,
+            'created_at' => Carbon::parse('2026-06-01 10:05:00'),
+            'updated_at' => Carbon::parse('2026-06-01 10:05:00'),
+        ]);
+
+        TreatmentInfo::query()->whereKey($treatment->id)->update([
+            'status' => TreatmentStatus::Cancelled,
+            'cancelled_at' => Carbon::parse('2026-06-01 15:00:00'),
+        ]);
+
+        $day = \Illuminate\Support\Carbon::parse('2026-06-01');
+        $chronology = app(ChronologyServiceInterface::class);
+        $sessionRows = $chronology->getSessionsForDay($day);
+        $this->assertCount(1, $sessionRows);
+        $this->assertSame(30.0, (float) $sessionRows->first()->received_total);
+
+        $treatmentCancellations = app(TreatmentInfoServiceInterface::class)->listCancellationsForDate($day);
+        $this->assertCount(1, $treatmentCancellations);
+        $this->assertSame(30.0, $treatmentCancellations->first()['refund_amount']);
 
         Carbon::setTestNow();
     }

@@ -30,8 +30,9 @@ class ChronologyService implements ChronologyServiceInterface
             ->leftJoinSub($appointmentDaySummary, 'a', function ($join): void {
                 $join->on('a.patient_id', '=', 'p.id');
             })
-            ->where('ts.status', '!=', 'cancelled')
-            ->where('ti.status', '!=', 'cancelled')
+            // Include cancelled sessions and sessions on cancelled treatments in SUM(received_payment):
+            // "Total reçu" is gross cash recorded that day; treatment + session cancellation tables
+            // subtract refunds so net stays consistent.
             ->whereDate('ts.created_at', $dateString)
             ->select([
                 'ti.patient_id',
