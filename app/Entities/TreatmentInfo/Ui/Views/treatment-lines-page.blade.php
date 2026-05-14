@@ -169,10 +169,10 @@
             @endphp
             <div class="app-card overflow-hidden shadow-sm {{ $isCancelled ? 'opacity-75' : '' }}" wire:key="treatment-{{ $treatment->id }}">
                 <div class="border-b px-5 py-3" style="background-color: {{ $isCancelled ? '#6b7280' : 'var(--color-action-primary)' }}; border-color: color-mix(in srgb, {{ $isCancelled ? '#6b7280' : 'var(--color-action-primary)' }} 82%, black);">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="min-w-0 flex items-center gap-2 overflow-x-auto">
-                            <h2 class="shrink-0 text-lg font-semibold text-white {{ $isCancelled ? 'line-through' : '' }}">{{ $treatment->description }}</h2>
-                            
+                    <div class="flex flex-col gap-2.5">
+                        <h2 class="min-w-0 text-lg font-semibold leading-snug text-white {{ $isCancelled ? 'line-through' : '' }}">{{ $treatment->description }}</h2>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                            <div class="flex min-w-0 flex-wrap items-center gap-2">
                         <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium" style="background-color: color-mix(in srgb, white 16%, transparent); color: white;">
                             {{ __('Global: :value DH', ['value' => number_format((float) $treatment->global_price, 2, '.', '')]) }}
                         </span>
@@ -185,8 +185,8 @@
                         <span class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold" style="{{ $statusStyle }}">
                             {{ $status }}
                         </span>
-                        </div>
-                        <div class="flex items-center gap-2 text-sm whitespace-nowrap">
+                            </div>
+                        <div class="flex shrink-0 items-center gap-2 text-sm whitespace-nowrap sm:justify-end">
                             <button
                                 type="button"
                                 wire:click="toggleTreatmentExpanded({{ $treatment->id }})"
@@ -235,6 +235,7 @@
                             </button>
                             @endif
                         </div>
+                    </div>
                     </div>
                 </div>
 
