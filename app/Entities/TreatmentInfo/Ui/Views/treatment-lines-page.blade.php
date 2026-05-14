@@ -309,7 +309,16 @@
                                                 data-highlighted-session="true"
                                             @endif
                                             style="{{ $session->status === 'cancelled' ? 'opacity: 0.5; background-color: #e5e7eb; text-decoration: line-through;' : ($isHighlightedSession ? 'background-color: color-mix(in srgb, #f59e0b 18%, white);' : '') }}">
-                                            <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">{{ $session->session_date?->format('n/j/Y g:i:s A') }}</td>
+                                            <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">
+                                                @if($session->session_date)
+                                                    <div class="flex flex-col leading-tight">
+                                                        <span class="font-semibold tabular-nums app-title">{{ $session->session_date->format('H:i:s') }}</span>
+                                                        <span class="text-xs tabular-nums app-text-gray">{{ $session->session_date->format('d/m/Y') }}</span>
+                                                    </div>
+                                                @else
+                                                    <span class="app-text-muted">—</span>
+                                                @endif
+                                            </td>
                                             <td class="px-4 py-3 {{ $session->status === 'cancelled' ? 'line-through' : '' }}">
                                                 {{ $session->notes }}
                                                 @if($session->status === 'cancelled')
@@ -384,7 +393,16 @@
                                                 <tbody class="app-divider divide-y">
                                                     @foreach ($treatment->corrections as $correction)
                                                         <tr wire:key="correction-{{ $correction->id }}">
-                                                            <td class="px-4 py-3">{{ $correction->created_at?->format('n/j/Y g:i A') }}</td>
+                                                            <td class="px-4 py-3">
+                                                                @if($correction->created_at)
+                                                                    <div class="flex flex-col leading-tight">
+                                                                        <span class="font-semibold tabular-nums app-title">{{ $correction->created_at->format('H:i:s') }}</span>
+                                                                        <span class="text-xs tabular-nums app-text-gray">{{ $correction->created_at->format('d/m/Y') }}</span>
+                                                                    </div>
+                                                                @else
+                                                                    <span class="app-text-muted">—</span>
+                                                                @endif
+                                                            </td>
                                                             <td class="px-4 py-3">{{ number_format((float) $correction->old_global_price, 2, '.', '') }} DH</td>
                                                             <td class="px-4 py-3">{{ number_format((float) $correction->new_global_price, 2, '.', '') }} DH</td>
                                                             <td class="px-4 py-3">{{ $correction->old_description }}</td>
@@ -413,8 +431,26 @@
                                                     <tbody class="app-divider divide-y">
                                                         @foreach ($sessionCorrections as $correction)
                                                             <tr wire:key="session-correction-{{ $correction->id }}">
-                                                                <td class="px-4 py-3">{{ $correction->created_at?->format('n/j/Y g:i A') }}</td>
-                                                                <td class="px-4 py-3">{{ $correction->new_session_date?->format('n/j/Y g:i A') }}</td>
+                                                                <td class="px-4 py-3">
+                                                                    @if($correction->created_at)
+                                                                        <div class="flex flex-col leading-tight">
+                                                                            <span class="font-semibold tabular-nums app-title">{{ $correction->created_at->format('H:i:s') }}</span>
+                                                                            <span class="text-xs tabular-nums app-text-gray">{{ $correction->created_at->format('d/m/Y') }}</span>
+                                                                        </div>
+                                                                    @else
+                                                                        <span class="app-text-muted">—</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="px-4 py-3">
+                                                                    @if($correction->new_session_date)
+                                                                        <div class="flex flex-col leading-tight">
+                                                                            <span class="font-semibold tabular-nums app-title">{{ $correction->new_session_date->format('H:i:s') }}</span>
+                                                                            <span class="text-xs tabular-nums app-text-gray">{{ $correction->new_session_date->format('d/m/Y') }}</span>
+                                                                        </div>
+                                                                    @else
+                                                                        <span class="app-text-muted">—</span>
+                                                                    @endif
+                                                                </td>
                                                                 <td class="px-4 py-3">{{ number_format((float) $correction->old_received_payment, 2, '.', '') }} DH</td>
                                                                 <td class="px-4 py-3">{{ number_format((float) $correction->new_received_payment, 2, '.', '') }} DH</td>
                                                                 <td class="px-4 py-3">{{ $correction->old_notes ?: '—' }}</td>
